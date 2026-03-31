@@ -5,8 +5,13 @@ import { Button } from "@/components/ui";
 import { Plus } from "lucide-react";
 import { KitchenHeader } from "@/components/kitchen-planner/KitchenHeader";
 import { NewCustomerModal } from "./NewCustomerModal";
+import type { UserOption } from "@/lib/dish-queries";
 
-export function PassHeader() {
+interface PassHeaderProps {
+  users: UserOption[];
+}
+
+export function PassHeader({ users }: PassHeaderProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -18,7 +23,7 @@ export function PassHeader() {
           </Button>
         }
       />
-      <NewCustomerModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <NewCustomerModal open={modalOpen} onClose={() => setModalOpen(false)} users={users} />
     </>
   );
 }

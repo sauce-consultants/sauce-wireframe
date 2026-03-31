@@ -12,9 +12,10 @@ import { Edit } from "lucide-react";
 interface KitchenBoardProps {
   data: KitchenBoardData;
   projects: ProjectOption[];
+  users: { id: number; name: string }[];
 }
 
-export function KitchenBoard({ data, projects }: KitchenBoardProps) {
+export function KitchenBoard({ data, projects, users }: KitchenBoardProps) {
   const [selected, setSelected] = useState<Dish | null>(null);
   const [editing, setEditing] = useState(false);
   const [comments, setComments] = useState<DishComment[]>([]);
@@ -89,6 +90,7 @@ export function KitchenBoard({ data, projects }: KitchenBoardProps) {
           onClose={() => { setEditing(false); setSelected(null); }}
           dish={selected}
           projects={projects}
+          users={users}
         />
       )}
     </div>

@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { Modal, Input, Select, Button } from "@/components/ui";
-import { STAGES, OWNERS, T_SHIRT_SIZES } from "./types";
+import { STAGES, T_SHIRT_SIZES } from "./types";
 import { createCustomer } from "@/app/the-pass/actions";
 
 interface NewCustomerModalProps {
   open: boolean;
   onClose: () => void;
+  users: { id: number; name: string }[];
 }
 
 const stageOptions = STAGES.map((s) => ({
@@ -15,17 +16,13 @@ const stageOptions = STAGES.map((s) => ({
   label: `${s.title} (${s.key})`,
 }));
 
-const ownerOptions = Object.entries(OWNERS).map(([key, val]) => ({
-  value: key,
-  label: val.name,
-}));
-
 const sizeOptions = T_SHIRT_SIZES.map((s) => ({
   value: s.value,
   label: s.label,
 }));
 
-export function NewCustomerModal({ open, onClose }: NewCustomerModalProps) {
+export function NewCustomerModal({ open, onClose, users }: NewCustomerModalProps) {
+  const ownerOptions = users.map((u) => ({ value: u.name, label: u.name }));
   const [stage, setStage] = useState<string>("enquiry");
   const [owner, setOwner] = useState<string>("");
   const [size, setSize] = useState<string>("M");
@@ -60,7 +57,7 @@ export function NewCustomerModal({ open, onClose }: NewCustomerModalProps) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="New Customer" maxWidth="max-w-lg">
+    <Modal open={open} onClose={onClose} title="New Customer" maxWidth="max-w-2xl">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input

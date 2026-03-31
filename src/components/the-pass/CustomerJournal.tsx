@@ -5,7 +5,7 @@ import { Badge, Button } from "@/components/ui";
 import { Plus, MessageSquare, Phone, Mail, RefreshCw, Users } from "lucide-react";
 import { OwnerAvatar } from "./OwnerAvatar";
 import { AddJournalModal } from "./AddJournalModal";
-import { OWNERS, type JournalEntry, type EntryType } from "./types";
+import { type JournalEntry, type EntryType } from "./types";
 import { formatRelativeTime } from "@/lib/relative-time";
 
 const typeConfig: Record<EntryType, { icon: React.ReactNode }> = {
@@ -19,10 +19,11 @@ const typeConfig: Record<EntryType, { icon: React.ReactNode }> = {
 interface CustomerJournalProps {
   entries: JournalEntry[];
   customerId: number;
+  users: { id: number; name: string }[];
   onRefresh: () => void;
 }
 
-export function CustomerJournal({ entries, customerId, onRefresh }: CustomerJournalProps) {
+export function CustomerJournal({ entries, customerId, users, onRefresh }: CustomerJournalProps) {
   const [addOpen, setAddOpen] = useState(false);
 
   return (
@@ -43,7 +44,6 @@ export function CustomerJournal({ entries, customerId, onRefresh }: CustomerJour
       {entries.length > 0 && (
         <div className="space-y-3">
           {entries.map((entry) => {
-            const owner = OWNERS[entry.author];
             const type = entry.entryType ? typeConfig[entry.entryType] : null;
 
             return (
@@ -51,8 +51,8 @@ export function CustomerJournal({ entries, customerId, onRefresh }: CustomerJour
                 {/* Header */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <OwnerAvatar owner={entry.author} />
-                    <span className="text-xs font-semibold">{owner.name}</span>
+                    <OwnerAvatar name={entry.author} />
+                    <span className="text-xs font-semibold">{entry.author}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {type && (
@@ -76,6 +76,7 @@ export function CustomerJournal({ entries, customerId, onRefresh }: CustomerJour
         open={addOpen}
         onClose={() => setAddOpen(false)}
         customerId={customerId}
+        users={users}
         onAdded={onRefresh}
       />
     </div>

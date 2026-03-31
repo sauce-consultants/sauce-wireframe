@@ -9,9 +9,10 @@ import type { ProjectOption } from "./types";
 
 interface KitchenPageHeaderProps {
   projects: ProjectOption[];
+  users: { id: number; name: string }[];
 }
 
-export function KitchenPageHeader({ projects }: KitchenPageHeaderProps) {
+export function KitchenPageHeader({ projects, users }: KitchenPageHeaderProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -23,7 +24,7 @@ export function KitchenPageHeader({ projects }: KitchenPageHeaderProps) {
           </Button>
         }
       />
-      <NewDishModal open={modalOpen} onClose={() => setModalOpen(false)} projects={projects} />
+      <NewDishModal open={modalOpen} onClose={() => setModalOpen(false)} projects={projects} users={users} />
     </>
   );
 }

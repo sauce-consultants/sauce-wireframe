@@ -1,6 +1,6 @@
 import { getDb } from "./db";
 import { computeHeat } from "./heat";
-import type { Customer, BoardData, Stage, Owner, TShirtSize, JournalEntry, EntryType } from "@/components/the-pass/types";
+import type { Customer, BoardData, Stage, TShirtSize, JournalEntry, EntryType } from "@/components/the-pass/types";
 
 interface CustomerRow {
   id: number;
@@ -22,7 +22,7 @@ function rowToCustomer(row: CustomerRow): Customer {
     companyName: row.company_name,
     subtitle: row.subtitle,
     stage: row.stage,
-    owner: row.owner as Customer["owner"],
+    owner: row.owner,
     size: row.size as TShirtSize | null,
     lastActivity: row.last_activity,
     nextAction: row.next_action,
@@ -58,7 +58,7 @@ export interface NewCustomer {
   companyName: string;
   subtitle?: string;
   stage: Stage;
-  owner: Owner;
+  owner: string;
   size?: TShirtSize;
   nextAction?: string;
   dueDate?: string;
@@ -91,7 +91,7 @@ export interface UpdateCustomer {
   companyName: string;
   subtitle?: string;
   stage: Stage;
-  owner: Owner;
+  owner: string;
   size?: TShirtSize;
   nextAction?: string;
   dueDate?: string;
@@ -141,7 +141,7 @@ function rowToJournalEntry(row: JournalRow): JournalEntry {
     id: row.id,
     customerId: row.customer_id,
     content: row.content,
-    author: row.author as Owner,
+    author: row.author,
     entryType: row.entry_type as EntryType | null,
     createdAt: row.created_at,
   };
@@ -158,7 +158,7 @@ export function getJournalEntries(customerId: number): JournalEntry[] {
 export interface NewJournalEntry {
   customerId: number;
   content: string;
-  author: Owner;
+  author: string;
   entryType?: EntryType;
 }
 

@@ -10,9 +10,10 @@ import { Edit } from "lucide-react";
 
 interface PassBoardProps {
   data: BoardData;
+  users: { id: number; name: string }[];
 }
 
-export function PassBoard({ data }: PassBoardProps) {
+export function PassBoard({ data, users }: PassBoardProps) {
   const [selected, setSelected] = useState<Customer | null>(null);
   const [editing, setEditing] = useState(false);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
@@ -90,6 +91,7 @@ export function PassBoard({ data }: PassBoardProps) {
           <CustomerDetail
             customer={selected}
             journalEntries={journalEntries}
+            users={users}
             onJournalRefresh={handleJournalRefresh}
           />
         )}
@@ -101,6 +103,7 @@ export function PassBoard({ data }: PassBoardProps) {
           open={editing}
           onClose={handleEditClose}
           customer={selected}
+          users={users}
         />
       )}
     </div>

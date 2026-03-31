@@ -2,12 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { insertCustomer, updateCustomer as updateCustomerDb, insertJournalEntry } from "@/lib/queries";
-import { OWNERS, T_SHIRT_SIZES, type Stage, type Owner, type TShirtSize, type EntryType } from "@/components/the-pass/types";
+import { T_SHIRT_SIZES, type Stage, type TShirtSize, type EntryType } from "@/components/the-pass/types";
 
 const VALID_SIZES = T_SHIRT_SIZES.map((s) => s.value);
-
 const VALID_STAGES: Stage[] = ["enquiry", "reservation", "seated", "cleared", "archived"];
-const VALID_OWNERS = Object.keys(OWNERS) as Owner[];
 
 export async function createCustomer(formData: FormData) {
   const companyName = formData.get("companyName") as string;
@@ -18,22 +16,16 @@ export async function createCustomer(formData: FormData) {
   const nextAction = formData.get("nextAction") as string;
   const dueDate = formData.get("dueDate") as string;
 
-  if (!companyName?.trim()) {
-    return { error: "Company name is required." };
-  }
-  if (!VALID_STAGES.includes(stage as Stage)) {
-    return { error: "Please select a stage." };
-  }
-  if (!VALID_OWNERS.includes(owner as Owner)) {
-    return { error: "Please select an owner." };
-  }
+  if (!companyName?.trim()) return { error: "Company name is required." };
+  if (!VALID_STAGES.includes(stage as Stage)) return { error: "Please select a stage." };
+  if (!owner?.trim()) return { error: "Please select an owner." };
 
   try {
     insertCustomer({
       companyName: companyName.trim(),
       subtitle: subtitle?.trim() || undefined,
       stage: stage as Stage,
-      owner: owner as Owner,
+      owner: owner.trim(),
       size: VALID_SIZES.includes(size as TShirtSize) ? (size as TShirtSize) : undefined,
       nextAction: nextAction?.trim() || undefined,
       dueDate: dueDate?.trim() || undefined,
@@ -56,18 +48,10 @@ export async function updateCustomer(formData: FormData) {
   const nextAction = formData.get("nextAction") as string;
   const dueDate = formData.get("dueDate") as string;
 
-  if (!id) {
-    return { error: "Customer ID is missing." };
-  }
-  if (!companyName?.trim()) {
-    return { error: "Company name is required." };
-  }
-  if (!VALID_STAGES.includes(stage as Stage)) {
-    return { error: "Please select a stage." };
-  }
-  if (!VALID_OWNERS.includes(owner as Owner)) {
-    return { error: "Please select an owner." };
-  }
+  if (!id) return { error: "Customer ID is missing." };
+  if (!companyName?.trim()) return { error: "Company name is required." };
+  if (!VALID_STAGES.includes(stage as Stage)) return { error: "Please select a stage." };
+  if (!owner?.trim()) return { error: "Please select an owner." };
 
   try {
     updateCustomerDb({
@@ -75,7 +59,7 @@ export async function updateCustomer(formData: FormData) {
       companyName: companyName.trim(),
       subtitle: subtitle?.trim() || undefined,
       stage: stage as Stage,
-      owner: owner as Owner,
+      owner: owner.trim(),
       size: VALID_SIZES.includes(size as TShirtSize) ? (size as TShirtSize) : undefined,
       nextAction: nextAction?.trim() || undefined,
       dueDate: dueDate?.trim() || undefined,
@@ -96,21 +80,15 @@ export async function addJournalEntry(formData: FormData) {
   const author = formData.get("author") as string;
   const entryType = formData.get("entryType") as string;
 
-  if (!customerId) {
-    return { error: "Customer ID is missing." };
-  }
-  if (!content?.trim()) {
-    return { error: "Content is required." };
-  }
-  if (!VALID_OWNERS.includes(author as Owner)) {
-    return { error: "Please select an author." };
-  }
+  if (!customerId) return { error: "Customer ID is missing." };
+  if (!content?.trim()) return { error: "Content is required." };
+  if (!author?.trim()) return { error: "Please select an author." };
 
   try {
     insertJournalEntry({
       customerId,
       content: content.trim(),
-      author: author as Owner,
+      author: author.trim(),
       entryType: VALID_ENTRY_TYPES.includes(entryType as EntryType) ? (entryType as EntryType) : undefined,
     });
 

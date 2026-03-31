@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Modal, Input, Textarea, Select, Button } from "@/components/ui";
-import { OWNERS, T_SHIRT_SIZES } from "@/components/the-pass/types";
+import { T_SHIRT_SIZES } from "@/components/the-pass/types";
 import { DISH_STATUSES, PRIORITIES, AGENT_SUGGESTIONS, type Dish, type ProjectOption } from "./types";
 import { updateDish } from "@/app/the-kitchen/actions";
 
@@ -11,15 +12,17 @@ interface EditDishModalProps {
   onClose: () => void;
   dish: Dish;
   projects: ProjectOption[];
+  users: { id: number; name: string }[];
 }
 
 const statusOptions = DISH_STATUSES.map((s) => ({ value: s.key, label: s.title }));
 const priorityOptions = PRIORITIES.map((p) => ({ value: p.value, label: p.label }));
-const ownerOptions = Object.entries(OWNERS).map(([key, val]) => ({ value: key, label: val.name }));
 const sizeOptions = T_SHIRT_SIZES.map((s) => ({ value: s.value, label: s.label }));
 
-export function EditDishModal({ open, onClose, dish, projects }: EditDishModalProps) {
+export function EditDishModal({ open, onClose, dish, projects, users }: EditDishModalProps) {
+  const ownerOptions = users.map((u) => ({ value: u.name, label: u.name }));
   const [status, setStatus] = useState<string>(dish.status);
+  const { data: session } = useSession();
   const [customerId, setCustomerId] = useState<string>(String(dish.customerId));
   const [assignee, setAssignee] = useState<string>(dish.assignee ?? "");
   const [priority, setPriority] = useState<string>(dish.priority);
@@ -54,6 +57,8 @@ export function EditDishModal({ open, onClose, dish, projects }: EditDishModalPr
     formData.set("assignee", assignee);
     formData.set("priority", priority);
     formData.set("size", size);
+    formData.set("changedBy", session?.user?.name || "Unknown");
+    formData.set("changedByType", "human");
 
     const result = await updateDish(formData);
     setSubmitting(false);
@@ -67,7 +72,7 @@ export function EditDishModal({ open, onClose, dish, projects }: EditDishModalPr
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Edit Dish" maxWidth="max-w-lg">
+    <Modal open={open} onClose={onClose} title="Edit Dish" maxWidth="max-w-2xl">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input label="Title" name="title" defaultValue={dish.title} required />

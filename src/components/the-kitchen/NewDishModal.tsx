@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Modal, Input, Textarea, Select, Button } from "@/components/ui";
-import { OWNERS, T_SHIRT_SIZES } from "@/components/the-pass/types";
+import { T_SHIRT_SIZES } from "@/components/the-pass/types";
 import { DISH_STATUSES, PRIORITIES, AGENT_SUGGESTIONS, type ProjectOption } from "./types";
 import { createDish } from "@/app/the-kitchen/actions";
 
@@ -10,14 +10,15 @@ interface NewDishModalProps {
   open: boolean;
   onClose: () => void;
   projects: ProjectOption[];
+  users: { id: number; name: string }[];
 }
 
 const statusOptions = DISH_STATUSES.map((s) => ({ value: s.key, label: s.title }));
 const priorityOptions = PRIORITIES.map((p) => ({ value: p.value, label: p.label }));
-const ownerOptions = Object.entries(OWNERS).map(([key, val]) => ({ value: key, label: val.name }));
 const sizeOptions = T_SHIRT_SIZES.map((s) => ({ value: s.value, label: s.label }));
 
-export function NewDishModal({ open, onClose, projects }: NewDishModalProps) {
+export function NewDishModal({ open, onClose, projects, users }: NewDishModalProps) {
+  const ownerOptions = users.map((u) => ({ value: u.name, label: u.name }));
   const [status, setStatus] = useState<string>("backlog");
   const [customerId, setCustomerId] = useState<string>("");
   const [assignee, setAssignee] = useState<string>("");
@@ -62,7 +63,7 @@ export function NewDishModal({ open, onClose, projects }: NewDishModalProps) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="New Dish" maxWidth="max-w-lg">
+    <Modal open={open} onClose={onClose} title="New Dish" maxWidth="max-w-2xl">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input label="Title" name="title" placeholder="e.g. Build login page" required />

@@ -222,6 +222,20 @@ export function getAllCustomersSimple(): ProjectOption[] {
   return rows.map((r) => ({ id: r.id, name: r.company_name, subtitle: r.subtitle, shortCode: r.short_code }));
 }
 
+// --- Users ---
+
+export interface UserOption {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export function getAllUsers(): UserOption[] {
+  const db = getDb();
+  const rows = db.prepare("SELECT id, name, email FROM users ORDER BY name ASC").all() as { id: number; name: string; email: string }[];
+  return rows;
+}
+
 // --- Ref-based lookup ---
 
 export function getDishByRef(ref: string): Dish | null {

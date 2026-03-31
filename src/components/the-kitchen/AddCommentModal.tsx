@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Modal, Textarea, Input, Select, Button } from "@/components/ui";
-import { OWNERS } from "@/components/the-pass/types";
+import { useSession } from "next-auth/react";
+import { Modal, Textarea, Button } from "@/components/ui";
 import { addDishComment } from "@/app/the-kitchen/actions";
 
 interface AddCommentModalProps {
@@ -12,14 +12,8 @@ interface AddCommentModalProps {
   onAdded: () => void;
 }
 
-const ownerOptions = Object.entries(OWNERS).map(([key, val]) => ({
-  value: val.name,
-  label: val.name,
-}));
-
 export function AddCommentModal({ open, onClose, dishId, onAdded }: AddCommentModalProps) {
-  const [authorType, setAuthorType] = useState<"human" | "agent">("human");
-  const [humanAuthor, setHumanAuthor] = useState<string>("");
+  const { data: session } = useSession();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,12 +25,8 @@ export function AddCommentModal({ open, onClose, dishId, onAdded }: AddCommentMo
     const form = e.currentTarget;
     const formData = new FormData(form);
     formData.set("dishId", String(dishId));
-    formData.set("authorType", authorType);
-
-    if (authorType === "human") {
-      formData.set("authorName", humanAuthor);
-    }
-    // For agent, authorName comes from the input field via name="authorName"
+    formData.set("authorName", session?.user?.name || "Unknown");
+    formData.set("authorType", "human");
 
     const result = await addDishComment(formData);
     setSubmitting(false);
@@ -47,16 +37,17 @@ export function AddCommentModal({ open, onClose, dishId, onAdded }: AddCommentMo
     }
 
     form.reset();
-    setHumanAuthor("");
-    setAuthorType("human");
     onAdded();
     onClose();
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Add Comment" maxWidth="max-w-lg">
+    <Modal open={open} onClose={onClose} title="Add Comment" maxWidth="max-w-2xl">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
+          <p className="text-sm text-text-muted">
+            Commenting as <span className="font-semibold text-black">{session?.user?.name || "..."}</span>
+          </p>
           <Textarea
             label="Comment"
             name="content"
@@ -64,51 +55,6 @@ export function AddCommentModal({ open, onClose, dishId, onAdded }: AddCommentMo
             rows={4}
             required
           />
-
-          {/* Author type toggle */}
-          <div>
-            <label className="block text-sm font-semibold mb-1.5">Author Type</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setAuthorType("human")}
-                className={`px-4 py-2 text-sm font-semibold border-4 transition-colors ${
-                  authorType === "human" ? "border-black bg-black text-white" : "border-gray-light text-text-muted"
-                }`}
-              >
-                Human
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthorType("agent")}
-                className={`px-4 py-2 text-sm font-semibold border-4 transition-colors ${
-                  authorType === "agent" ? "border-black bg-black text-white" : "border-gray-light text-text-muted"
-                }`}
-              >
-                Agent
-              </button>
-            </div>
-          </div>
-
-          {authorType === "human" ? (
-            <Select
-              inline
-              label="Author"
-              options={ownerOptions}
-              value={humanAuthor}
-              onChange={setHumanAuthor}
-              placeholder="Select person"
-              required
-            />
-          ) : (
-            <Input
-              label="Agent Name"
-              name="authorName"
-              placeholder="e.g. ux-designer, backend-dev"
-              required
-            />
-          )}
-
           {error && <p className="text-sm text-danger font-semibold">{error}</p>}
         </div>
 

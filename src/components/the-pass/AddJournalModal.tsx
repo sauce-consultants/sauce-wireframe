@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Modal, Textarea, Select, Button } from "@/components/ui";
-import { OWNERS, ENTRY_TYPES } from "./types";
+import { ENTRY_TYPES } from "./types";
 import { addJournalEntry } from "@/app/the-pass/actions";
 
 interface AddJournalModalProps {
@@ -10,19 +10,16 @@ interface AddJournalModalProps {
   onClose: () => void;
   customerId: number;
   onAdded: () => void;
+  users: { id: number; name: string }[];
 }
-
-const ownerOptions = Object.entries(OWNERS).map(([key, val]) => ({
-  value: key,
-  label: val.name,
-}));
 
 const typeOptions = ENTRY_TYPES.map((t) => ({
   value: t.value,
   label: t.label,
 }));
 
-export function AddJournalModal({ open, onClose, customerId, onAdded }: AddJournalModalProps) {
+export function AddJournalModal({ open, onClose, customerId, onAdded, users }: AddJournalModalProps) {
+  const ownerOptions = users.map((u) => ({ value: u.name, label: u.name }));
   const [author, setAuthor] = useState<string>("");
   const [entryType, setEntryType] = useState<string>("note");
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +53,7 @@ export function AddJournalModal({ open, onClose, customerId, onAdded }: AddJourn
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Add Journal Entry" maxWidth="max-w-lg">
+    <Modal open={open} onClose={onClose} title="Add Journal Entry" maxWidth="max-w-2xl">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Textarea

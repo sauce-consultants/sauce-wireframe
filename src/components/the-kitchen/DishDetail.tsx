@@ -1,6 +1,5 @@
 import { Badge, Markdown } from "@/components/ui";
 import { OwnerAvatar } from "@/components/the-pass/OwnerAvatar";
-import { OWNERS, type Owner } from "@/components/the-pass/types";
 import { DishComments } from "./DishComments";
 import { DishHistory } from "./DishHistory";
 import { DISH_STATUSES, type Dish, type DishComment, type DishHistoryEntry } from "./types";
@@ -15,7 +14,7 @@ interface DishDetailProps {
 
 export function DishDetail({ dish, comments, history, onRefresh }: DishDetailProps) {
   const statusLabel = DISH_STATUSES.find((s) => s.key === dish.status)?.title ?? dish.status;
-  const isValidOwner = dish.assignee && dish.assignee in OWNERS;
+  const hasAssignee = !!dish.assignee;
 
   return (
     <div className="space-y-6">
@@ -37,14 +36,14 @@ export function DishDetail({ dish, comments, history, onRefresh }: DishDetailPro
 
       {/* Details grid */}
       <div className="border-4 border-black divide-y-2 divide-gray-light">
-        {isValidOwner && (
+        {hasAssignee && (
           <div className="flex items-center gap-3 px-4 py-3">
             <User size={16} className="text-text-muted shrink-0" />
             <div>
               <p className="text-xs text-text-muted">Assignee</p>
               <div className="flex items-center gap-2 mt-0.5">
-                <OwnerAvatar owner={dish.assignee as Owner} />
-                <span className="text-sm font-semibold">{OWNERS[dish.assignee as Owner].name}</span>
+                <OwnerAvatar name={dish.assignee!} />
+                <span className="text-sm font-semibold">{dish.assignee}</span>
               </div>
             </div>
           </div>

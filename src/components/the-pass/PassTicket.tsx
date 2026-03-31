@@ -1,7 +1,7 @@
 import { Badge, Card, CardBody } from "@/components/ui";
 import { Clock, CheckCircle } from "lucide-react";
 import { OwnerAvatar } from "./OwnerAvatar";
-import { OWNERS, type Customer, type Heat } from "./types";
+import type { Customer, Heat } from "./types";
 import { formatRelativeTime } from "@/lib/relative-time";
 
 const heatBorder: Record<Heat, string> = {
@@ -17,8 +17,6 @@ interface PassTicketProps {
 }
 
 export function PassTicket({ customer, onClick }: PassTicketProps) {
-  const ownerName = OWNERS[customer.owner].name;
-
   return (
     <Card
       className={`border-l-4 ${heatBorder[customer.heat]} transition-transform duration-150 hover:-translate-y-1 hover:shadow-md cursor-pointer`}
@@ -40,8 +38,8 @@ export function PassTicket({ customer, onClick }: PassTicketProps) {
 
         {/* Owner + last activity */}
         <div className="flex items-center gap-2 mt-2">
-          <OwnerAvatar owner={customer.owner} />
-          <span className="text-xs">{ownerName}</span>
+          <OwnerAvatar name={customer.owner} />
+          <span className="text-xs">{customer.owner}</span>
           <span className="text-text-muted">·</span>
           <div className="flex items-center gap-1 text-xs text-text-muted">
             <Clock size={12} />

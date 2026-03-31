@@ -1,7 +1,7 @@
 import { Badge, Avatar } from "@/components/ui";
 import { Clock, CheckCircle, Calendar, Building2, User } from "lucide-react";
 import { CustomerJournal } from "./CustomerJournal";
-import { OWNERS, STAGES, type Customer, type JournalEntry, type Stage, type Heat } from "./types";
+import { STAGES, type Customer, type JournalEntry, type Stage, type Heat } from "./types";
 import { formatRelativeTime } from "@/lib/relative-time";
 
 const stageBadge: Record<Stage, string> = {
@@ -22,11 +22,11 @@ const heatLabel: Record<Heat, string> = {
 interface CustomerDetailProps {
   customer: Customer;
   journalEntries: JournalEntry[];
+  users: { id: number; name: string }[];
   onJournalRefresh: () => void;
 }
 
-export function CustomerDetail({ customer, journalEntries, onJournalRefresh }: CustomerDetailProps) {
-  const owner = OWNERS[customer.owner];
+export function CustomerDetail({ customer, journalEntries, users, onJournalRefresh }: CustomerDetailProps) {
   const stage = stageBadge[customer.stage];
   const stageInfo = STAGES.find((s) => s.key === customer.stage);
   const heat = heatLabel[customer.heat];
@@ -54,8 +54,8 @@ export function CustomerDetail({ customer, journalEntries, onJournalRefresh }: C
           <div>
             <p className="text-xs text-text-muted">Owner</p>
             <div className="flex items-center gap-2 mt-0.5">
-              <Avatar name={owner.name} size="xs" />
-              <span className="text-sm font-semibold">{owner.name}</span>
+              <Avatar name={customer.owner} size="xs" />
+              <span className="text-sm font-semibold">{customer.owner}</span>
             </div>
           </div>
         </div>
@@ -98,6 +98,7 @@ export function CustomerDetail({ customer, journalEntries, onJournalRefresh }: C
       <CustomerJournal
         entries={journalEntries}
         customerId={customer.id}
+        users={users}
         onRefresh={onJournalRefresh}
       />
 

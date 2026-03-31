@@ -1,6 +1,5 @@
 import { Badge, Card, CardBody } from "@/components/ui";
 import { OwnerAvatar } from "@/components/the-pass/OwnerAvatar";
-import { OWNERS, type Owner } from "@/components/the-pass/types";
 import type { Dish } from "./types";
 
 interface DishCardProps {
@@ -9,7 +8,7 @@ interface DishCardProps {
 }
 
 export function DishCard({ dish, onClick }: DishCardProps) {
-  const isValidOwner = dish.assignee && dish.assignee in OWNERS;
+  const hasAssignee = !!dish.assignee;
 
   return (
     <Card
@@ -33,10 +32,10 @@ export function DishCard({ dish, onClick }: DishCardProps) {
 
         {/* Assignee + agent + priority */}
         <div className="flex items-center gap-2 mt-2 flex-wrap">
-          {isValidOwner && (
+          {hasAssignee && (
             <>
-              <OwnerAvatar owner={dish.assignee as Owner} />
-              <span className="text-xs">{OWNERS[dish.assignee as Owner].name}</span>
+              <OwnerAvatar name={dish.assignee!} />
+              <span className="text-xs">{dish.assignee}</span>
             </>
           )}
           {dish.agent && (

@@ -20,7 +20,7 @@ function Modal({
   title,
   children,
   footer,
-  maxWidth = "max-w-md",
+  maxWidth = "max-w-2xl",
   destructive = false,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);

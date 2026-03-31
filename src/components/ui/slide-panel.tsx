@@ -79,7 +79,7 @@ function SlidePanel({
         tabIndex={-1}
         className={`
           fixed top-0 ${position[from]} bottom-0 z-modal
-          w-full sm:max-w-md lg:max-w-lg
+          w-full sm:max-w-lg lg:max-w-2xl
           bg-white border-l-4 border-black
           flex flex-col
           transition-transform duration-250 ease-out

@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Modal, Input, Select, Button } from "@/components/ui";
-import { STAGES, OWNERS, T_SHIRT_SIZES, type Customer } from "./types";
+import { STAGES, T_SHIRT_SIZES, type Customer } from "./types";
 import { updateCustomer } from "@/app/the-pass/actions";
 
 interface EditCustomerModalProps {
   open: boolean;
   onClose: () => void;
   customer: Customer;
+  users: { id: number; name: string }[];
 }
 
 const stageOptions = STAGES.map((s) => ({
@@ -16,17 +17,13 @@ const stageOptions = STAGES.map((s) => ({
   label: `${s.title} (${s.key})`,
 }));
 
-const ownerOptions = Object.entries(OWNERS).map(([key, val]) => ({
-  value: key,
-  label: val.name,
-}));
-
 const sizeOptions = T_SHIRT_SIZES.map((s) => ({
   value: s.value,
   label: s.label,
 }));
 
-export function EditCustomerModal({ open, onClose, customer }: EditCustomerModalProps) {
+export function EditCustomerModal({ open, onClose, customer, users }: EditCustomerModalProps) {
+  const ownerOptions = users.map((u) => ({ value: u.name, label: u.name }));
   const [stage, setStage] = useState<string>(customer.stage);
   const [owner, setOwner] = useState<string>(customer.owner);
   const [size, setSize] = useState<string>(customer.size ?? "M");
@@ -65,7 +62,7 @@ export function EditCustomerModal({ open, onClose, customer }: EditCustomerModal
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Edit Customer" maxWidth="max-w-lg">
+    <Modal open={open} onClose={onClose} title="Edit Customer" maxWidth="max-w-2xl">
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input

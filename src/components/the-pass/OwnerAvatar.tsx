@@ -1,12 +1,10 @@
 import { Avatar } from "@/components/ui";
-import { OWNERS, type Owner } from "./types";
 
 interface OwnerAvatarProps {
-  owner: Owner;
+  name: string;
   size?: "xs" | "sm" | "md";
 }
 
-export function OwnerAvatar({ owner, size = "xs" }: OwnerAvatarProps) {
-  const { name } = OWNERS[owner];
+export function OwnerAvatar({ name, size = "xs" }: OwnerAvatarProps) {
   return <Avatar name={name} size={size} />;
 }
