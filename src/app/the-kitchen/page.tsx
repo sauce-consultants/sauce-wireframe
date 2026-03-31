@@ -4,6 +4,11 @@ import { KitchenPageHeader } from "@/components/the-kitchen/KitchenPageHeader";
 
 export const dynamic = "force-dynamic";
 
+// Strip non-plain properties from libsql row objects before passing to client components
+function serialize<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
 interface Props {
   searchParams: Promise<{ table?: string | string[] }>;
 }
@@ -15,9 +20,9 @@ export default async function TheKitchenPage({ searchParams }: Props) {
     ? (Array.isArray(tableParam) ? tableParam : [tableParam]).map(Number).filter(Boolean)
     : [];
 
-  const data = getDishesByStatus(customerIds.length > 0 ? customerIds : undefined);
-  const projects = getAllCustomersSimple();
-  const users = getAllUsers();
+  const data = serialize(await getDishesByStatus(customerIds.length > 0 ? customerIds : undefined));
+  const projects = serialize(await getAllCustomersSimple());
+  const users = serialize(await getAllUsers());
 
   return (
     <>

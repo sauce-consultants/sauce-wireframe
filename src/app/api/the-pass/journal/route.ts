@@ -10,6 +10,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "customerId is required" }, { status: 400 });
   }
 
-  const entries = getJournalEntries(Number(customerId));
+  const entries = await getJournalEntries(Number(customerId));
   return NextResponse.json(entries);
 }

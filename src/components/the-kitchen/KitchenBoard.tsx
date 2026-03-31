@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useId } from "react";
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, type DragStartEvent, type DragEndEvent } from "@dnd-kit/core";
 import { useSession } from "next-auth/react";
 import { SlidePanel, Button } from "@/components/ui";
@@ -20,6 +20,7 @@ interface KitchenBoardProps {
 }
 
 export function KitchenBoard({ data: serverData, projects, users }: KitchenBoardProps) {
+  const dndId = useId();
   const { data: session } = useSession();
   const [board, setBoard] = useState<KitchenBoardData>(serverData);
   const [activeDish, setActiveDish] = useState<Dish | null>(null);
@@ -130,7 +131,7 @@ export function KitchenBoard({ data: serverData, projects, users }: KitchenBoard
         <DishFilters projects={projects} />
       </div>
 
-      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext id={dndId} sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 lg:grid lg:grid-cols-5 lg:overflow-visible lg:snap-none">
           {DISH_STATUSES.map((status) => (
             <KitchenColumn

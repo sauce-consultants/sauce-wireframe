@@ -1,4 +1,4 @@
-import { getDb } from "./db";
+import { initDb } from "./db";
 import type { Dish, KitchenBoard, DishStatus, Priority, ProjectOption, DishComment, DishHistoryEntry, AuthorType } from "@/components/the-kitchen/types";
 
 interface DishRow {
@@ -49,8 +49,8 @@ function rowToDish(row: DishRow): Dish {
   };
 }
 
-export function getDishesByStatus(customerIds?: number[]): KitchenBoard {
-  const db = getDb();
+export async function getDishesByStatus(customerIds?: number[]): Promise<KitchenBoard> {
+  const db = await initDb();
 
   let query = `
     SELECT d.*, c.company_name, c.subtitle, c.short_code
@@ -67,7 +67,8 @@ export function getDishesByStatus(customerIds?: number[]): KitchenBoard {
 
   query += " ORDER BY d.sort_order ASC, d.id ASC";
 
-  const rows = db.prepare(query).all(...params) as DishRow[];
+  const result = await db.execute({ sql: query, args: params });
+  const rows = result.rows as unknown as DishRow[];
 
   const board: KitchenBoard = {
     backlog: [],
@@ -85,15 +86,19 @@ export function getDishesByStatus(customerIds?: number[]): KitchenBoard {
   return board;
 }
 
-export function getDishById(id: number): Dish | null {
-  const db = getDb();
-  const row = db.prepare(`
-    SELECT d.*, c.company_name, c.subtitle, c.short_code
-    FROM dishes d
-    JOIN customers c ON d.customer_id = c.id
-    WHERE d.id = ?
-  `).get(id) as DishRow | undefined;
+export async function getDishById(id: number): Promise<Dish | null> {
+  const db = await initDb();
+  const result = await db.execute({
+    sql: `
+      SELECT d.*, c.company_name, c.subtitle, c.short_code
+      FROM dishes d
+      JOIN customers c ON d.customer_id = c.id
+      WHERE d.id = ?
+    `,
+    args: [id],
+  });
 
+  const row = result.rows[0] as unknown as DishRow | undefined;
   return row ? rowToDish(row) : null;
 }
 
@@ -109,30 +114,37 @@ export interface NewDish {
   labels?: string;
 }
 
-export function insertDish(data: NewDish): number {
-  const db = getDb();
+export async function insertDish(data: NewDish): Promise<number> {
+  const db = await initDb();
   const now = new Date().toISOString();
 
   // Auto-increment dish_number per project
-  const maxRow = db.prepare("SELECT COALESCE(MAX(dish_number), 0) as max_num FROM dishes WHERE customer_id = ?").get(data.customerId) as { max_num: number };
+  const maxResult = await db.execute({
+    sql: "SELECT COALESCE(MAX(dish_number), 0) as max_num FROM dishes WHERE customer_id = ?",
+    args: [data.customerId],
+  });
+  const maxRow = maxResult.rows[0] as unknown as { max_num: number };
   const dishNumber = maxRow.max_num + 1;
 
-  const result = db.prepare(`
-    INSERT INTO dishes (title, body, status, customer_id, dish_number, assignee, agent, priority, size, labels, sort_order, created_at, updated_at)
-    VALUES (@title, @body, @status, @customer_id, @dish_number, @assignee, @agent, @priority, @size, @labels, 0, @created_at, @updated_at)
-  `).run({
-    title: data.title,
-    body: data.body || "",
-    status: data.status || "backlog",
-    customer_id: data.customerId,
-    dish_number: dishNumber,
-    assignee: data.assignee || null,
-    agent: data.agent || null,
-    priority: data.priority || "med",
-    size: data.size || null,
-    labels: data.labels || "",
-    created_at: now,
-    updated_at: now,
+  const result = await db.execute({
+    sql: `
+      INSERT INTO dishes (title, body, status, customer_id, dish_number, assignee, agent, priority, size, labels, sort_order, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+    `,
+    args: [
+      data.title,
+      data.body || "",
+      data.status || "backlog",
+      data.customerId,
+      dishNumber,
+      data.assignee || null,
+      data.agent || null,
+      data.priority || "med",
+      data.size || null,
+      data.labels || "",
+      now,
+      now,
+    ],
   });
 
   return Number(result.lastInsertRowid);
@@ -153,52 +165,54 @@ export interface UpdateDish {
   changedByType: AuthorType;
 }
 
-export function updateDish(data: UpdateDish): void {
-  const db = getDb();
+export async function updateDish(data: UpdateDish): Promise<void> {
+  const db = await initDb();
   const now = new Date().toISOString();
 
   // Fetch current state for diff
-  const current = db.prepare("SELECT * FROM dishes WHERE id = ?").get(data.id) as {
+  const currentResult = await db.execute({
+    sql: "SELECT * FROM dishes WHERE id = ?",
+    args: [data.id],
+  });
+  const current = currentResult.rows[0] as unknown as {
     title: string; body: string; status: string; customer_id: number;
     assignee: string | null; agent: string | null; priority: string;
     size: string | null; labels: string;
   } | undefined;
 
   // Perform update
-  db.prepare(`
-    UPDATE dishes
-    SET title = @title,
-        body = @body,
-        status = @status,
-        customer_id = @customer_id,
-        assignee = @assignee,
-        agent = @agent,
-        priority = @priority,
-        size = @size,
-        labels = @labels,
-        updated_at = @updated_at
-    WHERE id = @id
-  `).run({
-    id: data.id,
-    title: data.title,
-    body: data.body || "",
-    status: data.status,
-    customer_id: data.customerId,
-    assignee: data.assignee || null,
-    agent: data.agent || null,
-    priority: data.priority || "med",
-    size: data.size || null,
-    labels: data.labels || "",
-    updated_at: now,
+  await db.execute({
+    sql: `
+      UPDATE dishes
+      SET title = ?,
+          body = ?,
+          status = ?,
+          customer_id = ?,
+          assignee = ?,
+          agent = ?,
+          priority = ?,
+          size = ?,
+          labels = ?,
+          updated_at = ?
+      WHERE id = ?
+    `,
+    args: [
+      data.title,
+      data.body || "",
+      data.status,
+      data.customerId,
+      data.assignee || null,
+      data.agent || null,
+      data.priority || "med",
+      data.size || null,
+      data.labels || "",
+      now,
+      data.id,
+    ],
   });
 
   // Record field-level history
   if (current) {
-    const insertHistory = db.prepare(`
-      INSERT INTO dish_history (dish_id, field, old_value, new_value, changed_by, changed_by_type, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-
     const diffs: [string, string | null, string | null][] = [];
     if (current.title !== data.title) diffs.push(["title", current.title, data.title]);
     if (current.body !== (data.body || "")) diffs.push(["body", current.body, data.body || ""]);
@@ -211,15 +225,26 @@ export function updateDish(data: UpdateDish): void {
     if ((current.labels || "") !== (data.labels || "")) diffs.push(["labels", current.labels, data.labels || ""]);
 
     for (const [field, oldVal, newVal] of diffs) {
-      insertHistory.run(data.id, field, oldVal, newVal, data.changedBy, data.changedByType, now);
+      await db.execute({
+        sql: `
+          INSERT INTO dish_history (dish_id, field, old_value, new_value, changed_by, changed_by_type, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `,
+        args: [data.id, field, oldVal, newVal, data.changedBy, data.changedByType, now],
+      });
     }
   }
 }
 
-export function getAllCustomersSimple(): ProjectOption[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT id, company_name, subtitle, short_code FROM customers ORDER BY company_name ASC").all() as { id: number; company_name: string; subtitle: string | null; short_code: string | null }[];
-  return rows.map((r) => ({ id: r.id, name: r.company_name, subtitle: r.subtitle, shortCode: r.short_code }));
+export async function getAllCustomersSimple(): Promise<ProjectOption[]> {
+  const db = await initDb();
+  const result = await db.execute("SELECT id, company_name, subtitle, short_code FROM customers ORDER BY company_name ASC");
+  return result.rows.map((r) => ({
+    id: Number(r.id),
+    name: String(r.company_name),
+    subtitle: r.subtitle ? String(r.subtitle) : null,
+    shortCode: r.short_code ? String(r.short_code) : null,
+  }));
 }
 
 // --- Users ---
@@ -230,50 +255,58 @@ export interface UserOption {
   email: string;
 }
 
-export function getAllUsers(): UserOption[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT id, name, email FROM users ORDER BY name ASC").all() as { id: number; name: string; email: string }[];
-  return rows;
+export async function getAllUsers(): Promise<UserOption[]> {
+  const db = await initDb();
+  const result = await db.execute("SELECT id, name, email FROM users ORDER BY name ASC");
+  return result.rows.map((r) => ({ id: Number(r.id), name: String(r.name), email: String(r.email) }));
 }
 
 // --- Ref-based lookup ---
 
-export function getDishByRef(ref: string): Dish | null {
+export async function getDishByRef(ref: string): Promise<Dish | null> {
   const match = ref.match(/^([A-Z0-9]+)-(\d+)$/);
   if (!match) return null;
 
   const [, shortCode, numStr] = match;
   const dishNumber = parseInt(numStr, 10);
 
-  const db = getDb();
-  const row = db.prepare(`
-    SELECT d.*, c.company_name, c.subtitle, c.short_code
-    FROM dishes d
-    JOIN customers c ON d.customer_id = c.id
-    WHERE c.short_code = ? AND d.dish_number = ?
-  `).get(shortCode, dishNumber) as DishRow | undefined;
+  const db = await initDb();
+  const result = await db.execute({
+    sql: `
+      SELECT d.*, c.company_name, c.subtitle, c.short_code
+      FROM dishes d
+      JOIN customers c ON d.customer_id = c.id
+      WHERE c.short_code = ? AND d.dish_number = ?
+    `,
+    args: [shortCode, dishNumber],
+  });
 
+  const row = result.rows[0] as unknown as DishRow | undefined;
   return row ? rowToDish(row) : null;
 }
 
 // --- Full detail for agent API ---
 
-export function getDishFullDetail(dishId: number): { dish: Dish; comments: DishComment[]; history: DishHistoryEntry[] } | null {
-  const dish = getDishById(dishId);
+export async function getDishFullDetail(dishId: number): Promise<{ dish: Dish; comments: DishComment[]; history: DishHistoryEntry[] } | null> {
+  const dish = await getDishById(dishId);
   if (!dish) return null;
 
   return {
     dish,
-    comments: getDishComments(dishId),
-    history: getDishHistory(dishId),
+    comments: await getDishComments(dishId),
+    history: await getDishHistory(dishId),
   };
 }
 
 // --- Comments ---
 
-export function getDishComments(dishId: number): DishComment[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM dish_comments WHERE dish_id = ? ORDER BY created_at DESC").all(dishId) as {
+export async function getDishComments(dishId: number): Promise<DishComment[]> {
+  const db = await initDb();
+  const result = await db.execute({
+    sql: "SELECT * FROM dish_comments WHERE dish_id = ? ORDER BY created_at DESC",
+    args: [dishId],
+  });
+  const rows = result.rows as unknown as {
     id: number; dish_id: number; content: string; author_name: string; author_type: string; created_at: string;
   }[];
   return rows.map((r) => ({
@@ -293,27 +326,28 @@ export interface NewDishComment {
   authorType: AuthorType;
 }
 
-export function insertDishComment(data: NewDishComment): number {
-  const db = getDb();
+export async function insertDishComment(data: NewDishComment): Promise<number> {
+  const db = await initDb();
   const now = new Date().toISOString();
-  const result = db.prepare(`
-    INSERT INTO dish_comments (dish_id, content, author_name, author_type, created_at)
-    VALUES (@dish_id, @content, @author_name, @author_type, @created_at)
-  `).run({
-    dish_id: data.dishId,
-    content: data.content,
-    author_name: data.authorName,
-    author_type: data.authorType,
-    created_at: now,
+  const result = await db.execute({
+    sql: `
+      INSERT INTO dish_comments (dish_id, content, author_name, author_type, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `,
+    args: [data.dishId, data.content, data.authorName, data.authorType, now],
   });
   return Number(result.lastInsertRowid);
 }
 
 // --- History ---
 
-export function getDishHistory(dishId: number): DishHistoryEntry[] {
-  const db = getDb();
-  const rows = db.prepare("SELECT * FROM dish_history WHERE dish_id = ? ORDER BY created_at DESC").all(dishId) as {
+export async function getDishHistory(dishId: number): Promise<DishHistoryEntry[]> {
+  const db = await initDb();
+  const result = await db.execute({
+    sql: "SELECT * FROM dish_history WHERE dish_id = ? ORDER BY created_at DESC",
+    args: [dishId],
+  });
+  const rows = result.rows as unknown as {
     id: number; dish_id: number; field: string; old_value: string | null; new_value: string | null;
     changed_by: string; changed_by_type: string; created_at: string;
   }[];

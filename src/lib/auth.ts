@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { getDb } from "./db";
+import { initDb } from "./db";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -11,40 +11,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user }) {
-      // Domain restriction — safety net on top of Google Workspace "Internal" setting
       const email = user.email;
       if (!email?.endsWith("@wearesauce.io")) {
         return false;
       }
 
-      // Upsert user in database
-      const db = getDb();
-      const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email) as { id: number } | undefined;
+      const db = await initDb();
+      const result = await db.execute({ sql: "SELECT id FROM users WHERE email = ?", args: [email] });
+      const existing = result.rows[0];
 
       if (!existing) {
         const now = new Date().toISOString();
-        db.prepare("INSERT INTO users (email, name, avatar_url, created_at) VALUES (?, ?, ?, ?)").run(
-          email,
-          user.name || email.split("@")[0],
-          user.image || null,
-          now
-        );
+        await db.execute({
+          sql: "INSERT INTO users (email, name, avatar_url, created_at) VALUES (?, ?, ?, ?)",
+          args: [email, user.name || email.split("@")[0], user.image || null, now],
+        });
       } else if (user.image) {
-        // Update avatar on each sign-in in case it changed
-        db.prepare("UPDATE users SET avatar_url = ? WHERE email = ?").run(user.image, email);
+        await db.execute({ sql: "UPDATE users SET avatar_url = ? WHERE email = ?", args: [user.image, email] });
       }
 
       return true;
     },
     async session({ session }) {
-      // Enrich session with user ID from our database
       if (session.user?.email) {
-        const db = getDb();
-        const row = db.prepare("SELECT id, name, avatar_url FROM users WHERE email = ?").get(session.user.email) as {
-          id: number;
-          name: string;
-          avatar_url: string | null;
-        } | undefined;
+        const db = await initDb();
+        const result = await db.execute({ sql: "SELECT id, name, avatar_url FROM users WHERE email = ?", args: [session.user.email] });
+        const row = result.rows[0] as unknown as { id: number; name: string; avatar_url: string | null } | undefined;
 
         if (row) {
           (session.user as unknown as Record<string, unknown>).dbId = row.id;

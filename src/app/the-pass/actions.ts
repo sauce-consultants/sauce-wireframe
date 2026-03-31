@@ -78,14 +78,14 @@ export async function moveCustomer(customerId: number, newStage: Stage) {
 
   try {
     const queries = await import("@/lib/queries");
-    const db = await import("@/lib/db");
-    const d = db.getDb();
+    const dbMod = await import("@/lib/db");
+    const d = await dbMod.initDb();
 
-    // Get current customer to preserve other fields
-    const row = d.prepare("SELECT * FROM customers WHERE id = ?").get(customerId) as Record<string, unknown> | undefined;
+    const result = await d.execute({ sql: "SELECT * FROM customers WHERE id = ?", args: [customerId] });
+    const row = result.rows[0] as unknown as Record<string, unknown> | undefined;
     if (!row) return { error: "Customer not found." };
 
-    queries.updateCustomer({
+    await queries.updateCustomer({
       id: customerId,
       companyName: row.company_name as string,
       subtitle: (row.subtitle as string) || undefined,

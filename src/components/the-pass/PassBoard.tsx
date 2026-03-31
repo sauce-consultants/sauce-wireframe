@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useId } from "react";
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, type DragStartEvent, type DragEndEvent } from "@dnd-kit/core";
 import { SlidePanel, Button } from "@/components/ui";
 import { PassColumn } from "./PassColumn";
@@ -17,6 +17,7 @@ interface PassBoardProps {
 }
 
 export function PassBoard({ data: serverData, users }: PassBoardProps) {
+  const dndId = useId();
   const [board, setBoard] = useState<BoardData>(serverData);
   const [activeCustomer, setActiveCustomer] = useState<Customer | null>(null);
   const [selected, setSelected] = useState<Customer | null>(null);
@@ -121,7 +122,7 @@ export function PassBoard({ data: serverData, users }: PassBoardProps) {
         <span className="flex items-center gap-1"><span className="h-2 w-2 bg-gray-light" /> Cold</span>
       </div>
 
-      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DndContext id={dndId} sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 lg:grid lg:grid-cols-5 lg:overflow-visible lg:snap-none">
           {STAGES.map((stage) => (
             <PassColumn

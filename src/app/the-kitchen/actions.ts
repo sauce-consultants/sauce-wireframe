@@ -88,10 +88,10 @@ export async function moveDish(dishId: number, newStatus: DishStatus, changedBy:
 
   try {
     const db = await import("@/lib/dish-queries");
-    const dish = db.getDishById(dishId);
+    const dish = await db.getDishById(dishId);
     if (!dish) return { error: "Dish not found." };
 
-    db.updateDish({
+    await db.updateDish({
       id: dishId,
       title: dish.title,
       body: dish.body,

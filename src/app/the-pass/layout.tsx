@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   description: "What's cooking at Sauce",
 };
 
-export default function ThePassLayout({ children }: { children: React.ReactNode }) {
-  const users = getAllUsers();
+export default async function ThePassLayout({ children }: { children: React.ReactNode }) {
+  const users = JSON.parse(JSON.stringify(await getAllUsers()));
 
   return (
     <Providers>

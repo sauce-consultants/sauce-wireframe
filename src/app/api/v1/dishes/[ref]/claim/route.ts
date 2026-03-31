@@ -8,19 +8,19 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ ref: string }> }
 ) {
-  const agent = validateApiKey(request.headers.get("authorization"));
+  const agent = await validateApiKey(request.headers.get("authorization"));
   if (!agent) {
     return NextResponse.json({ error: "Invalid or missing API key" }, { status: 401 });
   }
 
   const { ref } = await params;
-  const dish = getDishByRef(ref.toUpperCase());
+  const dish = await getDishByRef(ref.toUpperCase());
 
   if (!dish) {
     return NextResponse.json({ error: `Dish ${ref} not found` }, { status: 404 });
   }
 
-  updateDish({
+  await updateDish({
     id: dish.id,
     title: dish.title,
     body: dish.body,
@@ -35,6 +35,6 @@ export async function POST(
     changedByType: "agent",
   });
 
-  const updated = getDishByRef(ref.toUpperCase());
+  const updated = await getDishByRef(ref.toUpperCase());
   return NextResponse.json({ message: `Claimed by ${agent.agentName}`, dish: updated });
 }

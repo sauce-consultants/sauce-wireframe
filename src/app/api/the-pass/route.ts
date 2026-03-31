@@ -4,6 +4,6 @@ import { getCustomersByStage } from "@/lib/queries";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const data = getCustomersByStage();
+  const data = await getCustomersByStage();
   return NextResponse.json(data);
 }

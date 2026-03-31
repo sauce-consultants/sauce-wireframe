@@ -14,8 +14,8 @@ export async function GET(
     return NextResponse.json({ error: "Invalid dish ID" }, { status: 400 });
   }
 
-  const comments = getDishComments(dishId);
-  const history = getDishHistory(dishId);
+  const comments = await getDishComments(dishId);
+  const history = await getDishHistory(dishId);
 
   return NextResponse.json({ comments, history });
 }

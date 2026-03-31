@@ -4,9 +4,13 @@ import { PassBoard } from "@/components/the-pass/PassBoard";
 
 export const dynamic = "force-dynamic";
 
-export default function ThePassPage() {
-  const data = getCustomersByStage();
-  const users = getAllUsers();
+function serialize<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
+export default async function ThePassPage() {
+  const data = serialize(await getCustomersByStage());
+  const users = serialize(await getAllUsers());
 
   return (
     <div>

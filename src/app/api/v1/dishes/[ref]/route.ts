@@ -8,13 +8,13 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ ref: string }> }
 ) {
-  const agent = validateApiKey(request.headers.get("authorization"));
+  const agent = await validateApiKey(request.headers.get("authorization"));
   if (!agent) {
     return NextResponse.json({ error: "Invalid or missing API key" }, { status: 401 });
   }
 
   const { ref } = await params;
-  const dish = getDishByRef(ref.toUpperCase());
+  const dish = await getDishByRef(ref.toUpperCase());
 
   if (!dish) {
     return NextResponse.json({ error: `Dish ${ref} not found` }, { status: 404 });
@@ -22,8 +22,8 @@ export async function GET(
 
   return NextResponse.json({
     ...dish,
-    comments: getDishComments(dish.id),
-    history: getDishHistory(dish.id),
+    comments: await getDishComments(dish.id),
+    history: await getDishHistory(dish.id),
   });
 }
 
@@ -31,13 +31,13 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ ref: string }> }
 ) {
-  const agent = validateApiKey(request.headers.get("authorization"));
+  const agent = await validateApiKey(request.headers.get("authorization"));
   if (!agent) {
     return NextResponse.json({ error: "Invalid or missing API key" }, { status: 401 });
   }
 
   const { ref } = await params;
-  const dish = getDishByRef(ref.toUpperCase());
+  const dish = await getDishByRef(ref.toUpperCase());
 
   if (!dish) {
     return NextResponse.json({ error: `Dish ${ref} not found` }, { status: 404 });
@@ -45,7 +45,7 @@ export async function PATCH(
 
   const body = await request.json();
 
-  updateDish({
+  await updateDish({
     id: dish.id,
     title: body.title ?? dish.title,
     body: body.body ?? dish.body,
@@ -60,6 +60,6 @@ export async function PATCH(
     changedByType: "agent",
   });
 
-  const updated = getDishByRef(ref.toUpperCase());
+  const updated = await getDishByRef(ref.toUpperCase());
   return NextResponse.json(updated);
 }

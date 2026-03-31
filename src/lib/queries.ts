@@ -1,4 +1,4 @@
-import { getDb } from "./db";
+import { initDb } from "./db";
 import { computeHeat } from "./heat";
 import type { Customer, BoardData, Stage, TShirtSize, JournalEntry, EntryType } from "@/components/the-pass/types";
 
@@ -32,11 +32,10 @@ function rowToCustomer(row: CustomerRow): Customer {
   };
 }
 
-export function getCustomersByStage(): BoardData {
-  const db = getDb();
-  const rows = db
-    .prepare("SELECT * FROM customers ORDER BY sort_order ASC, id ASC")
-    .all() as CustomerRow[];
+export async function getCustomersByStage(): Promise<BoardData> {
+  const db = await initDb();
+  const result = await db.execute("SELECT * FROM customers ORDER BY sort_order ASC, id ASC");
+  const rows = result.rows as unknown as CustomerRow[];
 
   const board: BoardData = {
     enquiry: [],
@@ -64,23 +63,26 @@ export interface NewCustomer {
   dueDate?: string;
 }
 
-export function insertCustomer(data: NewCustomer): number {
-  const db = getDb();
+export async function insertCustomer(data: NewCustomer): Promise<number> {
+  const db = await initDb();
   const now = new Date().toISOString();
 
-  const result = db.prepare(`
-    INSERT INTO customers (company_name, subtitle, stage, owner, size, last_activity, next_action, due_date, created_at, sort_order)
-    VALUES (@company_name, @subtitle, @stage, @owner, @size, @last_activity, @next_action, @due_date, @created_at, 0)
-  `).run({
-    company_name: data.companyName,
-    subtitle: data.subtitle || null,
-    stage: data.stage,
-    owner: data.owner,
-    size: data.size || null,
-    last_activity: now,
-    next_action: data.nextAction || null,
-    due_date: data.dueDate || null,
-    created_at: now,
+  const result = await db.execute({
+    sql: `
+      INSERT INTO customers (company_name, subtitle, stage, owner, size, last_activity, next_action, due_date, created_at, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+    `,
+    args: [
+      data.companyName,
+      data.subtitle || null,
+      data.stage,
+      data.owner,
+      data.size || null,
+      now,
+      data.nextAction || null,
+      data.dueDate || null,
+      now,
+    ],
   });
 
   return Number(result.lastInsertRowid);
@@ -97,31 +99,34 @@ export interface UpdateCustomer {
   dueDate?: string;
 }
 
-export function updateCustomer(data: UpdateCustomer): void {
-  const db = getDb();
+export async function updateCustomer(data: UpdateCustomer): Promise<void> {
+  const db = await initDb();
   const now = new Date().toISOString();
 
-  db.prepare(`
-    UPDATE customers
-    SET company_name = @company_name,
-        subtitle = @subtitle,
-        stage = @stage,
-        owner = @owner,
-        size = @size,
-        next_action = @next_action,
-        due_date = @due_date,
-        last_activity = @last_activity
-    WHERE id = @id
-  `).run({
-    id: data.id,
-    company_name: data.companyName,
-    subtitle: data.subtitle || null,
-    stage: data.stage,
-    owner: data.owner,
-    size: data.size || null,
-    next_action: data.nextAction || null,
-    due_date: data.dueDate || null,
-    last_activity: now,
+  await db.execute({
+    sql: `
+      UPDATE customers
+      SET company_name = ?,
+          subtitle = ?,
+          stage = ?,
+          owner = ?,
+          size = ?,
+          next_action = ?,
+          due_date = ?,
+          last_activity = ?
+      WHERE id = ?
+    `,
+    args: [
+      data.companyName,
+      data.subtitle || null,
+      data.stage,
+      data.owner,
+      data.size || null,
+      data.nextAction || null,
+      data.dueDate || null,
+      now,
+      data.id,
+    ],
   });
 }
 
@@ -147,11 +152,13 @@ function rowToJournalEntry(row: JournalRow): JournalEntry {
   };
 }
 
-export function getJournalEntries(customerId: number): JournalEntry[] {
-  const db = getDb();
-  const rows = db
-    .prepare("SELECT * FROM journal_entries WHERE customer_id = ? ORDER BY created_at DESC")
-    .all(customerId) as JournalRow[];
+export async function getJournalEntries(customerId: number): Promise<JournalEntry[]> {
+  const db = await initDb();
+  const result = await db.execute({
+    sql: "SELECT * FROM journal_entries WHERE customer_id = ? ORDER BY created_at DESC",
+    args: [customerId],
+  });
+  const rows = result.rows as unknown as JournalRow[];
   return rows.map(rowToJournalEntry);
 }
 
@@ -162,23 +169,29 @@ export interface NewJournalEntry {
   entryType?: EntryType;
 }
 
-export function insertJournalEntry(data: NewJournalEntry): number {
-  const db = getDb();
+export async function insertJournalEntry(data: NewJournalEntry): Promise<number> {
+  const db = await initDb();
   const now = new Date().toISOString();
 
-  const result = db.prepare(`
-    INSERT INTO journal_entries (customer_id, content, author, entry_type, created_at)
-    VALUES (@customer_id, @content, @author, @entry_type, @created_at)
-  `).run({
-    customer_id: data.customerId,
-    content: data.content,
-    author: data.author,
-    entry_type: data.entryType || null,
-    created_at: now,
+  const result = await db.execute({
+    sql: `
+      INSERT INTO journal_entries (customer_id, content, author, entry_type, created_at)
+      VALUES (?, ?, ?, ?, ?)
+    `,
+    args: [
+      data.customerId,
+      data.content,
+      data.author,
+      data.entryType || null,
+      now,
+    ],
   });
 
   // Bump customer last_activity
-  db.prepare("UPDATE customers SET last_activity = ? WHERE id = ?").run(now, data.customerId);
+  await db.execute({
+    sql: "UPDATE customers SET last_activity = ? WHERE id = ?",
+    args: [now, data.customerId],
+  });
 
   return Number(result.lastInsertRowid);
 }

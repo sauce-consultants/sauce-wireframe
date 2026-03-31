@@ -12,8 +12,9 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@libsql/client": "^0.17.2",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "better-sqlite3": "^12.8.0",
+    "dotenv": "^17.3.1",
     "lucide-react": "^1.7.0",
     "next": "16.2.1",
     "next-auth": "^5.0.0-beta.30",
@@ -23,7 +24,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
