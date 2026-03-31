@@ -21,6 +21,8 @@ interface SelectProps {
   error?: string;
   disabled?: boolean;
   required?: boolean;
+  /** Render dropdown inline (no portal). Use inside modals/dialogs. */
+  inline?: boolean;
   className?: string;
 }
 
@@ -34,6 +36,7 @@ function Select({
   error,
   disabled = false,
   required = false,
+  inline = false,
   className = "",
 }: SelectProps) {
   const [open, setOpen] = useState(false);
@@ -84,8 +87,10 @@ function Select({
     }
   };
 
+  const Wrapper = inline ? ({ children }: { children: React.ReactNode }) => <>{children}</> : Portal;
+
   return (
-    <div className={className} ref={triggerRef}>
+    <div className={`relative ${className}`} ref={triggerRef}>
       <label className="block text-sm font-semibold mb-1.5">
         {label}
         {required && <span className="text-danger ml-1" aria-hidden="true">*</span>}
@@ -116,14 +121,16 @@ function Select({
         />
       </button>
 
-      {open && pos && (
-        <Portal>
+      {open && (inline || pos) && (
+        <Wrapper>
           <ul
             ref={listRef}
             id={listId}
             role="listbox"
-            className="absolute z-dropdown border-4 border-black bg-white max-h-60 overflow-auto"
-            style={{ top: pos.top + 4, left: pos.left, width: pos.width }}
+            className={`absolute z-dropdown border-4 border-black bg-white max-h-60 overflow-auto ${
+              inline ? "left-0 right-0 mt-1" : ""
+            }`}
+            style={inline ? undefined : { top: pos!.top + 4, left: pos!.left, width: pos!.width }}
           >
             {options.map((opt, i) => (
               <li
@@ -149,7 +156,7 @@ function Select({
               </li>
             ))}
           </ul>
-        </Portal>
+        </Wrapper>
       )}
 
       {(error || helperText) && (

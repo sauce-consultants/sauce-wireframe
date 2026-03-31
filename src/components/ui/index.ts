@@ -104,6 +104,8 @@ export type { FooterProps, FooterColumn } from "./footer";
 
 export { Portal } from "./portal";
 
+export { Markdown } from "./markdown";
+
 export { Form, FormSection, FormFieldGroup, FormActions } from "./form";
 
 export { Search } from "./search";
