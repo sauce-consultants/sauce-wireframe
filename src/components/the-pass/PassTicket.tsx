@@ -1,3 +1,5 @@
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Badge, Card, CardBody } from "@/components/ui";
 import { Clock, CheckCircle } from "lucide-react";
 import { OwnerAvatar } from "./OwnerAvatar";
@@ -17,53 +19,68 @@ interface PassTicketProps {
 }
 
 export function PassTicket({ customer, onClick }: PassTicketProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: customer.id, data: { customer } });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
-    <Card
-      className={`border-l-4 ${heatBorder[customer.heat]} transition-transform duration-150 hover:-translate-y-1 hover:shadow-md cursor-pointer`}
-      onClick={onClick}
-    >
-      <CardBody className="p-4">
-        {/* Company name + size */}
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="font-extrabold text-sm leading-tight">{customer.companyName}</p>
-            {customer.subtitle && (
-              <p className="text-xs text-text-muted">{customer.subtitle}</p>
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <Card
+        className={`border-l-4 ${heatBorder[customer.heat]} transition-transform duration-150 cursor-pointer ${
+          isDragging ? "opacity-50 shadow-lg" : "hover:-translate-y-1 hover:shadow-md"
+        }`}
+        onClick={isDragging ? undefined : onClick}
+      >
+        <CardBody className="p-4">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="font-extrabold text-sm leading-tight">{customer.companyName}</p>
+              {customer.subtitle && (
+                <p className="text-xs text-text-muted">{customer.subtitle}</p>
+              )}
+            </div>
+            {customer.size && (
+              <Badge variant="neutral" className="shrink-0">{customer.size}</Badge>
             )}
           </div>
-          {customer.size && (
-            <Badge variant="neutral" className="shrink-0">{customer.size}</Badge>
-          )}
-        </div>
 
-        {/* Owner + last activity */}
-        <div className="flex items-center gap-2 mt-2">
-          <OwnerAvatar name={customer.owner} />
-          <span className="text-xs">{customer.owner}</span>
-          <span className="text-text-muted">·</span>
-          <div className="flex items-center gap-1 text-xs text-text-muted">
-            <Clock size={12} />
-            <span className="font-mono">{formatRelativeTime(customer.lastActivity)}</span>
-          </div>
-        </div>
-
-        {/* Next action */}
-        {customer.nextAction && (
-          <div className="border-t-2 border-gray-light pt-2 mt-3">
-            <div className="flex items-start gap-1.5 text-xs">
-              <CheckCircle size={12} className="text-text-muted shrink-0 mt-0.5" />
-              <div>
-                <p>{customer.nextAction}</p>
-                {customer.dueDate && (
-                  <p className="font-mono text-text-muted mt-0.5">
-                    Due: {customer.dueDate}
-                  </p>
-                )}
-              </div>
+          <div className="flex items-center gap-2 mt-2">
+            <OwnerAvatar name={customer.owner} />
+            <span className="text-xs">{customer.owner}</span>
+            <span className="text-text-muted">·</span>
+            <div className="flex items-center gap-1 text-xs text-text-muted">
+              <Clock size={12} />
+              <span className="font-mono">{formatRelativeTime(customer.lastActivity)}</span>
             </div>
           </div>
-        )}
-      </CardBody>
-    </Card>
+
+          {customer.nextAction && (
+            <div className="border-t-2 border-gray-light pt-2 mt-3">
+              <div className="flex items-start gap-1.5 text-xs">
+                <CheckCircle size={12} className="text-text-muted shrink-0 mt-0.5" />
+                <div>
+                  <p>{customer.nextAction}</p>
+                  {customer.dueDate && (
+                    <p className="font-mono text-text-muted mt-0.5">
+                      Due: {customer.dueDate}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </CardBody>
+      </Card>
+    </div>
   );
 }

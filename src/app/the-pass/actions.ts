@@ -72,6 +72,37 @@ export async function updateCustomer(formData: FormData) {
   }
 }
 
+export async function moveCustomer(customerId: number, newStage: Stage) {
+  if (!customerId) return { error: "Customer ID is missing." };
+  if (!VALID_STAGES.includes(newStage)) return { error: "Invalid stage." };
+
+  try {
+    const queries = await import("@/lib/queries");
+    const db = await import("@/lib/db");
+    const d = db.getDb();
+
+    // Get current customer to preserve other fields
+    const row = d.prepare("SELECT * FROM customers WHERE id = ?").get(customerId) as Record<string, unknown> | undefined;
+    if (!row) return { error: "Customer not found." };
+
+    queries.updateCustomer({
+      id: customerId,
+      companyName: row.company_name as string,
+      subtitle: (row.subtitle as string) || undefined,
+      stage: newStage,
+      owner: row.owner as string,
+      size: (row.size as TShirtSize) || undefined,
+      nextAction: (row.next_action as string) || undefined,
+      dueDate: (row.due_date as string) || undefined,
+    });
+
+    revalidatePath("/the-pass");
+    return { success: true };
+  } catch {
+    return { error: "Failed to move customer." };
+  }
+}
+
 const VALID_ENTRY_TYPES: EntryType[] = ["note", "update", "meeting", "call", "email"];
 
 export async function addJournalEntry(formData: FormData) {

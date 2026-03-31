@@ -1,6 +1,8 @@
+import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Badge } from "@/components/ui";
 import { PassTicket } from "./PassTicket";
-import type { Customer, Heat } from "./types";
+import type { Customer, Heat, Stage } from "./types";
 
 const heatDot: Record<Heat, string> = {
   hot: "bg-black",
@@ -10,14 +12,16 @@ const heatDot: Record<Heat, string> = {
 };
 
 interface PassColumnProps {
+  stage: Stage;
   title: string;
   subtitle: string;
   customers: Customer[];
   onCardClick?: (customer: Customer) => void;
 }
 
-export function PassColumn({ title, subtitle, customers, onCardClick }: PassColumnProps) {
-  // Determine column heat from hottest card
+export function PassColumn({ stage, title, subtitle, customers, onCardClick }: PassColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: stage });
+
   const columnHeat = customers.reduce<Heat | null>((hottest, c) => {
     const order: Heat[] = ["hot", "warm", "cool", "cold"];
     if (!hottest) return c.heat;
@@ -26,7 +30,6 @@ export function PassColumn({ title, subtitle, customers, onCardClick }: PassColu
 
   return (
     <div className="flex flex-col min-w-[280px] snap-center">
-      {/* Column header */}
       <div className="flex items-start justify-between mb-3">
         <div>
           <div className="flex items-center gap-2">
@@ -40,16 +43,22 @@ export function PassColumn({ title, subtitle, customers, onCardClick }: PassColu
         )}
       </div>
 
-      {/* Cards */}
-      <div className="flex flex-col gap-3 flex-1">
-        {customers.length === 0 && (
-          <div className="border-4 border-gray-light border-dashed p-6 text-center text-text-muted text-xs">
-            Nothing here yet
-          </div>
-        )}
-        {customers.map((customer) => (
-          <PassTicket key={customer.id} customer={customer} onClick={() => onCardClick?.(customer)} />
-        ))}
+      <div
+        ref={setNodeRef}
+        className={`flex flex-col gap-3 flex-1 p-2 -m-2 transition-colors ${
+          isOver ? "bg-gray-light/50" : ""
+        }`}
+      >
+        <SortableContext items={customers.map((c) => c.id)} strategy={verticalListSortingStrategy}>
+          {customers.length === 0 && (
+            <div className="border-4 border-gray-light border-dashed p-6 text-center text-text-muted text-xs">
+              Nothing here yet
+            </div>
+          )}
+          {customers.map((customer) => (
+            <PassTicket key={customer.id} customer={customer} onClick={() => onCardClick?.(customer)} />
+          ))}
+        </SortableContext>
       </div>
     </div>
   );

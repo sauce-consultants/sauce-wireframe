@@ -82,6 +82,37 @@ export async function updateDish(formData: FormData) {
   }
 }
 
+export async function moveDish(dishId: number, newStatus: DishStatus, changedBy: string) {
+  if (!dishId) return { error: "Dish ID is missing." };
+  if (!VALID_STATUSES.includes(newStatus)) return { error: "Invalid status." };
+
+  try {
+    const db = await import("@/lib/dish-queries");
+    const dish = db.getDishById(dishId);
+    if (!dish) return { error: "Dish not found." };
+
+    db.updateDish({
+      id: dishId,
+      title: dish.title,
+      body: dish.body,
+      status: newStatus,
+      customerId: dish.customerId,
+      assignee: dish.assignee ?? undefined,
+      agent: dish.agent ?? undefined,
+      priority: dish.priority,
+      size: dish.size ?? undefined,
+      labels: dish.labels.join(","),
+      changedBy: changedBy || "Unknown",
+      changedByType: "human",
+    });
+
+    revalidatePath("/the-kitchen");
+    return { success: true };
+  } catch {
+    return { error: "Failed to move dish." };
+  }
+}
+
 export async function addDishComment(formData: FormData) {
   const dishId = Number(formData.get("dishId"));
   const content = formData.get("content") as string;
