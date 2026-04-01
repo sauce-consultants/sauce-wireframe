@@ -37,6 +37,12 @@ yarn-error.log*
 
 # database
 data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# playwright
+test-results/
+playwright-report/
 
 # vercel
 .vercel

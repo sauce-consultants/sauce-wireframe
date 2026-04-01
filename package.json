@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "npx playwright test",
+    "test:api": "npx playwright test tests/api/",
+    "test:browser": "npx playwright test tests/browser/"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -23,6 +26,7 @@
     "react-markdown": "^10.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
