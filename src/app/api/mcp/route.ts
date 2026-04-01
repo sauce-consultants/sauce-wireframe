@@ -11,10 +11,9 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept",
 };
 
-function createServer(apiKey: string) {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.KP_BASE_URL || "http://localhost:3000";
+function createServer(apiKey: string, requestUrl: string) {
+  const origin = new URL(requestUrl).origin;
+  const baseUrl = origin || process.env.KP_BASE_URL || "http://localhost:3000";
 
   async function api(method: string, path: string, body?: unknown): Promise<unknown> {
     const url = `${baseUrl.replace(/\/$/, "")}/api/v1${path}`;
@@ -171,7 +170,7 @@ async function handleRequest(req: Request): Promise<Response> {
     });
   }
 
-  const server = createServer(apiKey);
+  const server = createServer(apiKey, req.url);
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined, // stateless
     enableJsonResponse: true,
