@@ -39,14 +39,14 @@ async function api(method: string, path: string, body?: unknown): Promise<unknow
 // --- MCP Server ---
 
 const server = new McpServer({
-  name: "kitchen-planner",
+  name: "sauce-kitchen",
   version: "1.0.0",
 });
 
 // Tool: list_projects
 server.tool(
   "list_projects",
-  "List all projects (tables) with their short codes, stages, and owners",
+  "List all projects with their short codes, stages, and owners.",
   {},
   async () => {
     const data = await api("GET", "/projects");
@@ -54,10 +54,10 @@ server.tool(
   }
 );
 
-// Tool: list_dishes
+// Tool: list_tickets
 server.tool(
-  "list_dishes",
-  "List dishes (tickets) with optional filters. Returns full data including markdown body, comments, and history.",
+  "list_tickets",
+  "List tickets with optional filters. Returns full data including markdown body, comments, and history.",
   {
     project: z.string().optional().describe("Project short code to filter by (e.g. 'GIG'). Comma-separated for multiple."),
     status: z.string().optional().describe("Filter by status. Comma-separated. Values: backlog, todo, in_progress, review, done"),
@@ -76,12 +76,12 @@ server.tool(
   }
 );
 
-// Tool: read_dish
+// Tool: read_ticket
 server.tool(
-  "read_dish",
-  "Read a single dish by reference (e.g. GIG-0001). Returns full detail including markdown body, comments, and change history.",
+  "read_ticket",
+  "Read a single ticket by reference (e.g. GIG-0001). Returns full detail including markdown body, comments, and change history.",
   {
-    ref: z.string().describe("Dish reference (e.g. 'GIG-0001')"),
+    ref: z.string().describe("Ticket reference (e.g. 'GIG-0001')"),
   },
   async ({ ref }) => {
     const data = await api("GET", `/dishes/${ref.toUpperCase()}`);
@@ -89,12 +89,33 @@ server.tool(
   }
 );
 
-// Tool: update_dish
+// Tool: create_ticket
 server.tool(
-  "update_dish",
-  "Update fields on a dish. Only include the fields you want to change. Status changes, assignee changes, etc. are all tracked in history automatically.",
+  "create_ticket",
+  "Create a new ticket. Returns the created ticket with its assigned reference.",
   {
-    ref: z.string().describe("Dish reference (e.g. 'GIG-0001')"),
+    title: z.string().describe("Ticket title"),
+    project: z.string().describe("Project short code (e.g. 'GIG')"),
+    body: z.string().optional().describe("Markdown body content"),
+    status: z.enum(["backlog", "todo", "in_progress", "review", "done"]).optional().describe("Initial status (default: backlog)"),
+    assignee: z.string().optional().describe("Assignee name"),
+    agent: z.string().optional().describe("Agent name"),
+    priority: z.enum(["high", "med", "low"]).optional().describe("Priority level (default: med)"),
+    size: z.enum(["XS", "S", "M", "L", "XL"]).optional().describe("T-shirt size estimate"),
+    labels: z.string().optional().describe("Comma-separated labels (e.g. 'bug,frontend')"),
+  },
+  async (fields) => {
+    const data = await api("POST", "/dishes", fields);
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  }
+);
+
+// Tool: update_ticket
+server.tool(
+  "update_ticket",
+  "Update fields on a ticket. Only include the fields you want to change. Changes are tracked in history automatically.",
+  {
+    ref: z.string().describe("Ticket reference (e.g. 'GIG-0001')"),
     title: z.string().optional().describe("New title"),
     body: z.string().optional().describe("New markdown body content"),
     status: z.enum(["backlog", "todo", "in_progress", "review", "done"]).optional().describe("New status"),
@@ -115,12 +136,12 @@ server.tool(
   }
 );
 
-// Tool: add_comment
+// Tool: add_ticket_comment
 server.tool(
-  "add_comment",
-  "Add a comment to a dish. The author is automatically set from your API key identity. Supports markdown.",
+  "add_ticket_comment",
+  "Add a comment to a ticket. The author is automatically set from your API key identity. Supports markdown.",
   {
-    ref: z.string().describe("Dish reference (e.g. 'GIG-0001')"),
+    ref: z.string().describe("Ticket reference (e.g. 'GIG-0001')"),
     content: z.string().describe("Comment content (markdown supported)"),
   },
   async ({ ref, content }) => {
@@ -129,12 +150,12 @@ server.tool(
   }
 );
 
-// Tool: claim_dish
+// Tool: claim_ticket
 server.tool(
-  "claim_dish",
-  "Claim a dish — sets the agent field to your identity. Use this when you start working on a ticket.",
+  "claim_ticket",
+  "Claim a ticket — sets the agent field to your identity. Use this when you start working on a ticket.",
   {
-    ref: z.string().describe("Dish reference (e.g. 'GIG-0001')"),
+    ref: z.string().describe("Ticket reference (e.g. 'GIG-0001')"),
   },
   async ({ ref }) => {
     const data = await api("POST", `/dishes/${ref.toUpperCase()}/claim`);

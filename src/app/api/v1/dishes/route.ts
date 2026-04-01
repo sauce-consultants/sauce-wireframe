@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-auth";
-import { getDishesByStatus, getDishComments, getDishHistory } from "@/lib/dish-queries";
+import { getDishesByStatus, getDishComments, getDishHistory, insertDish, getDishById } from "@/lib/dish-queries";
 import { initDb } from "@/lib/db";
-import type { Dish } from "@/components/the-kitchen/types";
+import type { Dish, DishStatus, Priority } from "@/components/the-kitchen/types";
 
 export const dynamic = "force-dynamic";
 
@@ -60,4 +60,53 @@ export async function GET(request: NextRequest) {
   );
 
   return NextResponse.json({ dishes: enriched, count: enriched.length });
+}
+
+const VALID_STATUSES: DishStatus[] = ["backlog", "todo", "in_progress", "review", "done"];
+const VALID_PRIORITIES: Priority[] = ["high", "med", "low"];
+
+export async function POST(request: NextRequest) {
+  const agent = await validateApiKey(request.headers.get("authorization"));
+  if (!agent) {
+    return NextResponse.json({ error: "Invalid or missing API key" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const { title, project, body: ticketBody, status, assignee, agent: agentName, priority, size, labels } = body;
+
+  if (!title?.trim()) {
+    return NextResponse.json({ error: "title is required" }, { status: 400 });
+  }
+  if (!project) {
+    return NextResponse.json({ error: "project (short code) is required" }, { status: 400 });
+  }
+
+  // Resolve project short code to customer ID
+  const db = await initDb();
+  const result = await db.execute({
+    sql: "SELECT id FROM customers WHERE short_code = ?",
+    args: [String(project).toUpperCase()],
+  });
+  if (result.rows.length === 0) {
+    return NextResponse.json({ error: `No project found for code: ${project}` }, { status: 404 });
+  }
+  const customerId = Number(result.rows[0].id);
+
+  const dishId = await insertDish({
+    title: title.trim(),
+    body: ticketBody?.trim() || "",
+    status: VALID_STATUSES.includes(status) ? status : "backlog",
+    customerId,
+    assignee: assignee?.trim() || undefined,
+    agent: agentName?.trim() || undefined,
+    priority: VALID_PRIORITIES.includes(priority) ? priority : "med",
+    size: size?.trim() || undefined,
+    labels: labels?.trim() || "",
+  });
+
+  const dish = await getDishById(dishId);
+  const comments = await getDishComments(dishId);
+  const history = await getDishHistory(dishId);
+
+  return NextResponse.json({ ...dish, comments, history }, { status: 201 });
 }
