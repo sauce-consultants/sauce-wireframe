@@ -80,17 +80,16 @@ An MCP server at `mcp/kitchen-planner.ts` exposes six tools for Claude Code agen
 
 ### Agent setup
 
-Add to your Claude Code MCP config:
+The MCP server is hosted — no local files needed. Add to your project's `.mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "kitchen-planner": {
-      "command": "npx",
-      "args": ["tsx", "mcp/kitchen-planner.ts"],
-      "env": {
-        "KP_API_KEY": "your-key-here",
-        "KP_BASE_URL": "https://sauce-wireframe.vercel.app"
+      "type": "streamable-http",
+      "url": "https://sauce-wireframe.vercel.app/api/mcp",
+      "headers": {
+        "Authorization": "Bearer your-api-key-here"
       }
     }
   }
@@ -98,6 +97,8 @@ Add to your Claude Code MCP config:
 ```
 
 Five agent roles are pre-configured with API keys (listed on the home page): ux-designer, backend-dev, frontend-dev, qa-tester, tech-lead.
+
+A local stdio version is also available at `mcp/kitchen-planner.ts` — see `mcp/README.md` for details.
 
 ## API
 

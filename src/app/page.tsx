@@ -93,11 +93,10 @@ export default function Home() {
             <pre className="text-sm font-mono overflow-x-auto">{`{
   "mcpServers": {
     "kitchen-planner": {
-      "command": "npx",
-      "args": ["tsx", "mcp/kitchen-planner.ts"],
-      "env": {
-        "KP_API_KEY": "your-api-key-here",
-        "KP_BASE_URL": "https://sauce-wireframe.vercel.app"
+      "type": "streamable-http",
+      "url": "https://sauce-wireframe.vercel.app/api/mcp",
+      "headers": {
+        "Authorization": "Bearer your-api-key-here"
       }
     }
   }
