@@ -28,8 +28,8 @@ const sections = [
     icon: <Bot size={24} />,
     title: "MCP Server",
     subtitle: "Agent Integration",
-    description: "Model Context Protocol server for Claude Code agents. Agents can list projects, read tickets, update status, add comments, and claim dishes through native tool calls. Authenticated via per-agent API keys.",
-    features: ["list_projects", "list_dishes", "read_dish", "update_dish", "add_comment", "claim_dish"],
+    description: "Model Context Protocol server for Claude Code agents. Agents can list projects, create and read tickets, update status, add comments, and claim tickets through native tool calls. Authenticated via per-agent API keys.",
+    features: ["list_projects", "list_tickets", "read_ticket", "create_ticket", "update_ticket", "add_ticket_comment", "claim_ticket"],
   },
   {
     href: "/dev",
@@ -92,7 +92,7 @@ export default function Home() {
           <div className="border-4 border-black p-6 mb-6">
             <pre className="text-sm font-mono overflow-x-auto">{`{
   "mcpServers": {
-    "kitchen-planner": {
+    "sauce-kitchen": {
       "type": "streamable-http",
       "url": "https://sauce-wireframe.vercel.app/api/mcp",
       "headers": {
