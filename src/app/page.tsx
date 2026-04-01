@@ -93,7 +93,7 @@ export default function Home() {
             <pre className="text-sm font-mono overflow-x-auto">{`{
   "mcpServers": {
     "sauce-kitchen": {
-      "type": "streamable-http",
+      "type": "http",
       "url": "https://sauce-wireframe.vercel.app/api/mcp",
       "headers": {
         "Authorization": "Bearer your-api-key-here"
