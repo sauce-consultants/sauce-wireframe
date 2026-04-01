@@ -6,6 +6,7 @@ interface CustomerRow {
   id: number;
   company_name: string;
   subtitle: string | null;
+  short_code: string | null;
   stage: Stage;
   owner: string;
   size: string | null;
@@ -21,6 +22,7 @@ function rowToCustomer(row: CustomerRow): Customer {
     id: row.id,
     companyName: row.company_name,
     subtitle: row.subtitle,
+    shortCode: row.short_code,
     stage: row.stage,
     owner: row.owner,
     size: row.size as TShirtSize | null,
@@ -56,6 +58,7 @@ export async function getCustomersByStage(): Promise<BoardData> {
 export interface NewCustomer {
   companyName: string;
   subtitle?: string;
+  shortCode?: string;
   stage: Stage;
   owner: string;
   size?: TShirtSize;
@@ -69,12 +72,13 @@ export async function insertCustomer(data: NewCustomer): Promise<number> {
 
   const result = await db.execute({
     sql: `
-      INSERT INTO customers (company_name, subtitle, stage, owner, size, last_activity, next_action, due_date, created_at, sort_order)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+      INSERT INTO customers (company_name, subtitle, short_code, stage, owner, size, last_activity, next_action, due_date, created_at, sort_order)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
     `,
     args: [
       data.companyName,
       data.subtitle || null,
+      data.shortCode || null,
       data.stage,
       data.owner,
       data.size || null,
@@ -92,6 +96,7 @@ export interface UpdateCustomer {
   id: number;
   companyName: string;
   subtitle?: string;
+  shortCode?: string;
   stage: Stage;
   owner: string;
   size?: TShirtSize;
@@ -108,6 +113,7 @@ export async function updateCustomer(data: UpdateCustomer): Promise<void> {
       UPDATE customers
       SET company_name = ?,
           subtitle = ?,
+          short_code = ?,
           stage = ?,
           owner = ?,
           size = ?,
@@ -119,6 +125,7 @@ export async function updateCustomer(data: UpdateCustomer): Promise<void> {
     args: [
       data.companyName,
       data.subtitle || null,
+      data.shortCode || null,
       data.stage,
       data.owner,
       data.size || null,

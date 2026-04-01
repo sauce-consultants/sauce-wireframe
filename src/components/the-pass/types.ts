@@ -15,6 +15,7 @@ export interface Customer {
   id: number;
   companyName: string;
   subtitle: string | null;
+  shortCode: string | null;
   stage: Stage;
   owner: string;
   size: TShirtSize | null;

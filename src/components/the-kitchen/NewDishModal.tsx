@@ -67,14 +67,14 @@ export function NewDishModal({ open, onClose, projects, users }: NewDishModalPro
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input label="Title" name="title" placeholder="e.g. Build login page" required />
-          <Select inline label="Project" options={projectOptions} value={customerId} onChange={setCustomerId} placeholder="Select table" required />
+          <Select label="Project" options={projectOptions} value={customerId} onChange={setCustomerId} placeholder="Select table" required />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Select inline label="Status" options={statusOptions} value={status} onChange={setStatus} />
-            <Select inline label="Priority" options={priorityOptions} value={priority} onChange={setPriority} />
-            <Select inline label="Size" options={sizeOptions} value={size} onChange={setSize} placeholder="—" />
+            <Select label="Status" options={statusOptions} value={status} onChange={setStatus} />
+            <Select label="Priority" options={priorityOptions} value={priority} onChange={setPriority} />
+            <Select label="Size" options={sizeOptions} value={size} onChange={setSize} placeholder="—" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select inline label="Assignee" options={ownerOptions} value={assignee} onChange={setAssignee} placeholder="Unassigned" />
+            <Select label="Assignee" options={ownerOptions} value={assignee} onChange={setAssignee} placeholder="Unassigned" />
             <Input label="Agent" name="agent" placeholder={`e.g. ${AGENT_SUGGESTIONS[0]}`} helperText="AI agent working on this." />
           </div>
           <Input label="Labels" name="labels" placeholder="e.g. bug, frontend, spike" helperText="Comma-separated." />

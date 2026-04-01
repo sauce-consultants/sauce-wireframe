@@ -64,7 +64,7 @@ export function AddJournalModal({ open, onClose, customerId, onAdded, users }: A
             required
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select inline
+            <Select
               label="Author"
               options={ownerOptions}
               value={author}
@@ -72,7 +72,7 @@ export function AddJournalModal({ open, onClose, customerId, onAdded, users }: A
               placeholder="Who's writing?"
               required
             />
-            <Select inline
+            <Select
               label="Type"
               options={typeOptions}
               value={entryType}

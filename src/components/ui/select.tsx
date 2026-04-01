@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
-import { Portal } from "./portal";
 import { useFloating } from "./use-floating";
 
 interface SelectOption {
@@ -21,8 +20,6 @@ interface SelectProps {
   error?: string;
   disabled?: boolean;
   required?: boolean;
-  /** Render dropdown inline (no portal). Use inside modals/dialogs. */
-  inline?: boolean;
   className?: string;
 }
 
@@ -36,7 +33,6 @@ function Select({
   error,
   disabled = false,
   required = false,
-  inline = false,
   className = "",
 }: SelectProps) {
   const [open, setOpen] = useState(false);
@@ -50,12 +46,20 @@ function Select({
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (
-        !triggerRef.current?.contains(e.target as Node) &&
-        !listRef.current?.contains(e.target as Node)
-      ) {
-        setOpen(false);
+      if (triggerRef.current?.contains(e.target as Node)) return;
+      if (listRef.current?.contains(e.target as Node)) return;
+      // Scrollbar clicks report e.target as the scrollable element's parent
+      // in some browsers — fall back to coordinate hit-testing
+      if (listRef.current) {
+        const rect = listRef.current.getBoundingClientRect();
+        if (
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom
+        ) return;
       }
+      setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -86,8 +90,6 @@ function Select({
       setOpen(false);
     }
   };
-
-  const Wrapper = inline ? ({ children }: { children: React.ReactNode }) => <>{children}</> : Portal;
 
   return (
     <div className={`relative ${className}`} ref={triggerRef}>
@@ -121,42 +123,38 @@ function Select({
         />
       </button>
 
-      {open && (inline || pos) && (
-        <Wrapper>
-          <ul
-            ref={listRef}
-            id={listId}
-            role="listbox"
-            className={`absolute z-dropdown border-4 border-black bg-white max-h-60 overflow-auto ${
-              inline ? "left-0 right-0 mt-1" : ""
-            }`}
-            style={inline ? undefined : { top: pos!.top + 4, left: pos!.left, width: pos!.width }}
-          >
-            {options.map((opt, i) => (
-              <li
-                key={opt.value}
-                role="option"
-                aria-selected={opt.value === value}
-                aria-disabled={opt.disabled}
-                className={`
-                  px-3 py-2 text-sm cursor-pointer
-                  ${i === highlighted ? "bg-gray-light" : ""}
-                  ${opt.value === value ? "font-semibold" : ""}
-                  ${opt.disabled ? "opacity-50 pointer-events-none" : "hover:bg-gray-light"}
-                `}
-                onMouseEnter={() => setHighlighted(i)}
-                onClick={() => {
-                  if (!opt.disabled) {
-                    onChange?.(opt.value);
-                    setOpen(false);
-                  }
-                }}
-              >
-                {opt.label}
-              </li>
-            ))}
-          </ul>
-        </Wrapper>
+      {open && pos && (
+        <ul
+          ref={listRef}
+          id={listId}
+          role="listbox"
+          className="fixed z-dropdown border-4 border-black bg-white max-h-60 overflow-auto overscroll-contain"
+          style={{ top: pos.top + 4, left: pos.left, width: pos.width }}
+        >
+          {options.map((opt, i) => (
+            <li
+              key={`${opt.value}-${i}`}
+              role="option"
+              aria-selected={opt.value === value}
+              aria-disabled={opt.disabled}
+              className={`
+                px-3 py-2 text-sm cursor-pointer
+                ${i === highlighted ? "bg-gray-light" : ""}
+                ${opt.value === value ? "font-semibold" : ""}
+                ${opt.disabled ? "opacity-50 pointer-events-none" : "hover:bg-gray-light"}
+              `}
+              onMouseEnter={() => setHighlighted(i)}
+              onClick={() => {
+                if (!opt.disabled) {
+                  onChange?.(opt.value);
+                  setOpen(false);
+                }
+              }}
+            >
+              {opt.label}
+            </li>
+          ))}
+        </ul>
       )}
 
       {(error || helperText) && (

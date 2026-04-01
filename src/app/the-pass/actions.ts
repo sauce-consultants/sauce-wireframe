@@ -10,6 +10,7 @@ const VALID_STAGES: Stage[] = ["enquiry", "reservation", "seated", "cleared", "a
 export async function createCustomer(formData: FormData) {
   const companyName = formData.get("companyName") as string;
   const subtitle = formData.get("subtitle") as string;
+  const shortCode = formData.get("shortCode") as string;
   const stage = formData.get("stage") as string;
   const owner = formData.get("owner") as string;
   const size = formData.get("size") as string;
@@ -24,6 +25,7 @@ export async function createCustomer(formData: FormData) {
     insertCustomer({
       companyName: companyName.trim(),
       subtitle: subtitle?.trim() || undefined,
+      shortCode: shortCode?.trim() || undefined,
       stage: stage as Stage,
       owner: owner.trim(),
       size: VALID_SIZES.includes(size as TShirtSize) ? (size as TShirtSize) : undefined,
@@ -42,6 +44,7 @@ export async function updateCustomer(formData: FormData) {
   const id = Number(formData.get("id"));
   const companyName = formData.get("companyName") as string;
   const subtitle = formData.get("subtitle") as string;
+  const shortCode = formData.get("shortCode") as string;
   const stage = formData.get("stage") as string;
   const owner = formData.get("owner") as string;
   const size = formData.get("size") as string;
@@ -58,6 +61,7 @@ export async function updateCustomer(formData: FormData) {
       id,
       companyName: companyName.trim(),
       subtitle: subtitle?.trim() || undefined,
+      shortCode: shortCode?.trim() || undefined,
       stage: stage as Stage,
       owner: owner.trim(),
       size: VALID_SIZES.includes(size as TShirtSize) ? (size as TShirtSize) : undefined,
@@ -89,6 +93,7 @@ export async function moveCustomer(customerId: number, newStage: Stage) {
       id: customerId,
       companyName: row.company_name as string,
       subtitle: (row.subtitle as string) || undefined,
+      shortCode: (row.short_code as string) || undefined,
       stage: newStage,
       owner: row.owner as string,
       size: (row.size as TShirtSize) || undefined,

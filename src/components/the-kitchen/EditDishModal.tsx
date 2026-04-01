@@ -76,14 +76,14 @@ export function EditDishModal({ open, onClose, dish, projects, users }: EditDish
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <Input label="Title" name="title" defaultValue={dish.title} required />
-          <Select inline label="Project" options={projectOptions} value={customerId} onChange={setCustomerId} required />
+          <Select label="Project" options={projectOptions} value={customerId} onChange={setCustomerId} required />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Select inline label="Status" options={statusOptions} value={status} onChange={setStatus} />
-            <Select inline label="Priority" options={priorityOptions} value={priority} onChange={setPriority} />
-            <Select inline label="Size" options={sizeOptions} value={size} onChange={setSize} placeholder="—" />
+            <Select label="Status" options={statusOptions} value={status} onChange={setStatus} />
+            <Select label="Priority" options={priorityOptions} value={priority} onChange={setPriority} />
+            <Select label="Size" options={sizeOptions} value={size} onChange={setSize} placeholder="—" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select inline label="Assignee" options={ownerOptions} value={assignee} onChange={setAssignee} placeholder="Unassigned" />
+            <Select label="Assignee" options={ownerOptions} value={assignee} onChange={setAssignee} placeholder="Unassigned" />
             <Input label="Agent" name="agent" defaultValue={dish.agent ?? ""} placeholder={`e.g. ${AGENT_SUGGESTIONS[0]}`} />
           </div>
           <Input label="Labels" name="labels" defaultValue={dish.labels.join(", ")} placeholder="e.g. bug, frontend" />

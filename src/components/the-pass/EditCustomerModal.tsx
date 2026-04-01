@@ -78,10 +78,17 @@ export function EditCustomerModal({ open, onClose, customer, users }: EditCustom
             placeholder="e.g. York site, Phase 2"
             helperText="Optional project or site name."
           />
+          <Input
+            label="Project Code"
+            name="shortCode"
+            defaultValue={customer.shortCode ?? ""}
+            placeholder="e.g. ACME"
+            helperText="Unique short code used in dish references."
+          />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Select inline label="Stage" options={stageOptions} value={stage} onChange={setStage} required />
-            <Select inline label="Owner" options={ownerOptions} value={owner} onChange={setOwner} required />
-            <Select inline label="Size" options={sizeOptions} value={size} onChange={setSize} />
+            <Select label="Stage" options={stageOptions} value={stage} onChange={setStage} required />
+            <Select label="Owner" options={ownerOptions} value={owner} onChange={setOwner} required />
+            <Select label="Size" options={sizeOptions} value={size} onChange={setSize} />
           </div>
           <Input
             label="Next Action"

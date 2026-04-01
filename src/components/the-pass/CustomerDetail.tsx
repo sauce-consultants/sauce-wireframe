@@ -1,5 +1,5 @@
 import { Badge, Avatar } from "@/components/ui";
-import { Clock, CheckCircle, Calendar, Building2, User } from "lucide-react";
+import { Clock, CheckCircle, Calendar, Building2, User, Hash } from "lucide-react";
 import { CustomerJournal } from "./CustomerJournal";
 import { STAGES, type Customer, type JournalEntry, type Stage, type Heat } from "./types";
 import { formatRelativeTime } from "@/lib/relative-time";
@@ -59,6 +59,16 @@ export function CustomerDetail({ customer, journalEntries, users, onJournalRefre
             </div>
           </div>
         </div>
+
+        {customer.shortCode && (
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Hash size={16} className="text-text-muted shrink-0" />
+            <div>
+              <p className="text-xs text-text-muted">Project Code</p>
+              <p className="text-sm font-mono font-semibold">{customer.shortCode}</p>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center gap-3 px-4 py-3">
           <Building2 size={16} className="text-text-muted shrink-0" />
