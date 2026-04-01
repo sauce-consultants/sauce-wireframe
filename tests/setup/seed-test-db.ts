@@ -58,6 +58,7 @@ export async function seedTestDb() {
 
   const now = new Date().toISOString();
   const recent = new Date(Date.now() - 3600000).toISOString(); // 1 hour ago
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 3600000).toISOString(); // 30 days ago
 
   // 3 projects
   await db.execute({ sql: "INSERT INTO customers (company_name, subtitle, short_code, stage, owner, size, last_activity, next_action, due_date, created_at, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", args: ["TestCo", "Main Project", "TEST", "seated", "Test User", "M", recent, "Next step", "2026-04-01", now, 0] });
@@ -72,6 +73,12 @@ export async function seedTestDb() {
       args: [`Test dish ${i + 1}`, `## Description\n\nThis is test dish ${i + 1} in **${statuses[i]}** status.`, statuses[i], 1, i + 1, i < 3 ? "Test User" : null, i === 2 ? "test-agent" : null, i === 0 ? "high" : "med", "M", i === 0 ? "feature,test" : "", 0, now, now],
     });
   }
+
+  // Old done dish (30 days ago) — should be excluded from board queries
+  await db.execute({
+    sql: "INSERT INTO dishes (title, body, status, customer_id, dish_number, assignee, agent, priority, size, labels, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    args: ["Old done dish", "## Description\n\nThis dish was completed 30 days ago.", "done", 1, 6, "Test User", null, "med", "M", "", 0, thirtyDaysAgo, thirtyDaysAgo],
+  });
 
   // 1 comment on dish 1
   await db.execute({ sql: "INSERT INTO dish_comments (dish_id, content, author_name, author_type, created_at) VALUES (?, ?, ?, ?, ?)", args: [1, "This is a test comment", "test-agent", "agent", now] });

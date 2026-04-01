@@ -28,7 +28,7 @@ export default function DevIndex() {
     <div className="max-w-3xl">
       <h1 className="text-4xl mb-2">Dev Showcase</h1>
       <p className="text-text-muted mb-8">
-        Living reference for the Sauce Wireframe component toolkit.
+        Living reference for the Sauce Kitchen component toolkit.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {sections.map((section) => (

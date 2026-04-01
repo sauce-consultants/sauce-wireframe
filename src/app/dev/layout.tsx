@@ -57,7 +57,7 @@ export default function DevLayout({ children }: { children: React.ReactNode }) {
             {mobileOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <Link href="/dev" className="text-xl font-black tracking-tight">
-            Sauce Wireframe
+            Sauce Kitchen
           </Link>
         </div>
         <span className="text-xs font-mono text-text-muted border-2 border-gray-mid px-2 py-0.5">

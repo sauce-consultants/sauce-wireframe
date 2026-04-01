@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { Card, CardHeader, CardBody, Badge } from "@/components/ui";
+import { KitchenHeader } from "@/components/kitchen-planner/KitchenHeader";
+import { Providers } from "@/components/kitchen-planner/Providers";
 import { Utensils, ChefHat, Bot, Palette, ArrowRight } from "lucide-react";
 
 const sections = [
@@ -39,11 +43,13 @@ const sections = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen p-6 sm:p-8 lg:p-12">
+    <Providers>
+      <KitchenHeader />
+      <main className="p-6 sm:p-8 lg:p-12">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-5xl font-black mb-2">Kitchen Planner</h1>
+          <h1 className="text-5xl font-black mb-2">Sauce Kitchen</h1>
           <p className="text-lg text-text-muted">
             Internal tooling for Sauce Consultants. Pipeline management, ticket tracking, and AI agent integration.
           </p>
@@ -80,7 +86,7 @@ export default function Home() {
         <div id="mcp" className="mb-12">
           <h2 className="text-3xl font-black mb-4">MCP Server Setup</h2>
           <p className="text-sm text-text-muted mb-6">
-            Configure the MCP server in your project&apos;s <code className="font-mono bg-gray-light px-1.5 py-0.5">.mcp.json</code> to give Claude Code agents access to Kitchen Planner.
+            Configure the MCP server in your project&apos;s <code className="font-mono bg-gray-light px-1.5 py-0.5">.mcp.json</code> to give Claude Code agents access to Sauce Kitchen.
           </p>
 
           <div className="border-4 border-black p-6 mb-6">
@@ -139,5 +145,6 @@ export default function Home() {
         </div>
       </div>
     </main>
+    </Providers>
   );
 }

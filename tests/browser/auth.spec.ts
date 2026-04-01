@@ -17,9 +17,9 @@ test.describe("Authentication", () => {
     await expect(page.getByText("@wearesauce.io")).toBeVisible();
   });
 
-  test("home page is accessible without auth", async ({ page }) => {
+  test("home page redirects to signin without auth", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Kitchen Planner" })).toBeVisible();
+    await expect(page).toHaveURL(/\/auth\/signin/);
   });
 
   test("dev showcase is accessible without auth", async ({ page }) => {

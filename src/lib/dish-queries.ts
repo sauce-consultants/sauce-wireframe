@@ -57,12 +57,23 @@ export async function getDishesByStatus(customerIds?: number[]): Promise<Kitchen
     FROM dishes d
     JOIN customers c ON d.customer_id = c.id
   `;
-  const params: number[] = [];
+  const params: (number | string)[] = [];
+
+  const conditions: string[] = [];
 
   if (customerIds && customerIds.length > 0) {
     const placeholders = customerIds.map(() => "?").join(",");
-    query += ` WHERE d.customer_id IN (${placeholders})`;
+    conditions.push(`d.customer_id IN (${placeholders})`);
     params.push(...customerIds);
+  }
+
+  // Exclude done dishes older than 14 days to keep the board lean
+  const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  conditions.push(`(d.status != 'done' OR d.updated_at > ?)`);
+  params.push(cutoff);
+
+  if (conditions.length > 0) {
+    query += ` WHERE ${conditions.join(" AND ")}`;
   }
 
   query += " ORDER BY d.sort_order ASC, d.id ASC";

@@ -10,7 +10,6 @@ import { LogOut, User } from "lucide-react";
 const navItems = [
   { href: "/the-pass", label: "The Pass" },
   { href: "/the-kitchen", label: "The Kitchen" },
-  { href: "#", label: "Directory" },
 ];
 
 interface KitchenHeaderProps {
@@ -24,8 +23,8 @@ export function KitchenHeader({ action }: KitchenHeaderProps) {
   return (
     <header className="border-b-4 border-black px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-6">
-        <Link href="/the-pass" className="font-black text-lg tracking-tight">
-          Kitchen Planner
+        <Link href="/" className="font-black text-lg tracking-tight">
+          Sauce Kitchen
         </Link>
         <nav className="hidden sm:flex items-center gap-1">
           {navItems.map((item) => {

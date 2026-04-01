@@ -1,8 +1,8 @@
-# Agent instructions for Sauce Wireframe
+# Agent instructions for Sauce Kitchen
 
 ## Project overview
 
-Sauce Wireframe is a wireframe-styled component toolkit demo app. It showcases 41 UI components, 8 layout patterns, and 7 page templates -- all with a deliberate sketch/wireframe aesthetic (heavy borders, square edges, monochrome palette).
+Sauce Kitchen is a wireframe-styled component toolkit demo app. It showcases 41 UI components, 8 layout patterns, and 7 page templates -- all with a deliberate sketch/wireframe aesthetic (heavy borders, square edges, monochrome palette).
 
 ## Architecture
 

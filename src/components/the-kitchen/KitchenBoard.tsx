@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useId } from "react";
+import { useState, useEffect, useCallback, useId, useMemo } from "react";
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, type DragStartEvent, type DragEndEvent } from "@dnd-kit/core";
 import { useSession } from "next-auth/react";
 import { SlidePanel, Button } from "@/components/ui";
@@ -11,7 +11,7 @@ import { DishFilters } from "./DishFilters";
 import { EditDishModal } from "./EditDishModal";
 import { DISH_STATUSES, type KitchenBoard as KitchenBoardData, type Dish, type DishStatus, type DishComment, type DishHistoryEntry, type ProjectOption } from "./types";
 import { moveDish } from "@/app/the-kitchen/actions";
-import { Edit } from "lucide-react";
+import { Edit, Search } from "lucide-react";
 
 interface KitchenBoardProps {
   data: KitchenBoardData;
@@ -28,6 +28,7 @@ export function KitchenBoard({ data: serverData, projects, users }: KitchenBoard
   const [editing, setEditing] = useState(false);
   const [comments, setComments] = useState<DishComment[]>([]);
   const [history, setHistory] = useState<DishHistoryEntry[]>([]);
+  const [search, setSearch] = useState("");
 
   // Sync server data when it changes (e.g. after revalidation)
   useEffect(() => {
@@ -125,10 +126,35 @@ export function KitchenBoard({ data: serverData, projects, users }: KitchenBoard
     if (selected) fetchDishData(selected.id);
   };
 
+  const filteredBoard = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return board;
+    const filtered: KitchenBoardData = { backlog: [], todo: [], in_progress: [], review: [], done: [] };
+    for (const status of DISH_STATUSES) {
+      filtered[status.key] = board[status.key].filter((d) =>
+        d.title.toLowerCase().includes(q) ||
+        d.ref.toLowerCase().includes(q) ||
+        d.customerName.toLowerCase().includes(q) ||
+        (d.assignee && d.assignee.toLowerCase().includes(q))
+      );
+    }
+    return filtered;
+  }, [board, search]);
+
   return (
     <div>
-      <div className="mb-4">
+      <div className="mb-4 flex items-center gap-3">
         <DishFilters projects={projects} />
+        <div className="relative max-w-xs">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search dishes..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-12 w-full border-4 border-black bg-white pl-9 pr-4 text-sm font-semibold placeholder:text-text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          />
+        </div>
       </div>
 
       <DndContext id={dndId} sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -138,7 +164,7 @@ export function KitchenBoard({ data: serverData, projects, users }: KitchenBoard
               key={status.key}
               status={status.key}
               title={status.title}
-              dishes={board[status.key]}
+              dishes={filteredBoard[status.key]}
               onCardClick={setSelected}
             />
           ))}

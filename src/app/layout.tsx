@@ -15,7 +15,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sauce Wireframe",
+  title: "Sauce Kitchen",
   description: "Wireframe-styled component toolkit for fast prototyping",
 };
 

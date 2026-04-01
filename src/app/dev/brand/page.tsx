@@ -131,7 +131,7 @@ export default function BrandPage() {
     <div className="max-w-4xl">
       <h1 className="text-4xl mb-2">Brand Reference</h1>
       <p className="text-text-muted mb-12">
-        Visual identity tokens for Sauce Wireframe.
+        Visual identity tokens for Sauce Kitchen.
       </p>
 
       {/* --- Colours --- */}

@@ -13,9 +13,6 @@ export function middleware(req: NextRequest) {
   // Dev showcase is public
   if (pathname.startsWith("/dev")) return NextResponse.next();
 
-  // Home page is public
-  if (pathname === "/") return NextResponse.next();
-
   // Internal API routes — let through
   if (pathname.startsWith("/api/")) return NextResponse.next();
 

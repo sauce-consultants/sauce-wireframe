@@ -1,17 +1,22 @@
-# Sauce Wireframe
+# Sauce Kitchen
 
-A wireframe-styled component toolkit for fast customer prototyping sessions. Built as a living reference that demonstrates what a sketch-aesthetic UI library looks like in practice.
+A wireframe-styled internal tooling demo built on a 41-component UI library. Kitchen Planner is the reference application -- a sales pipeline and ticket tracker designed for AI agent collaboration via MCP.
 
 ## What is this?
 
-Sauce Wireframe is a demo app showcasing a complete wireframe-styled component system. It's designed for rapid prototyping with customers where polished production UI isn't the goal -- fast, schematic layouts are.
+Sauce Kitchen started as a component toolkit for rapid customer prototyping sessions. The wireframe aesthetic is intentional: heavy black borders, square edges, monochrome palette, bold typography, and offset solid shadows.
 
-The wireframe aesthetic is intentional: heavy black borders, square edges, monochrome palette with minimal colour, bold typography, and offset solid shadows.
+On top of that foundation sits **Kitchen Planner** -- internal tooling for Sauce Consultants with two boards, a REST API, and an MCP server that lets Claude Code agents read and update tickets directly.
 
 ## Tech stack
 
-- **Next.js 16** (App Router, TypeScript)
+- **Next.js 16** (App Router, React 19, TypeScript)
 - **Tailwind CSS v4** with custom theme tokens
+- **Turso** (hosted LibSQL) for persistence
+- **NextAuth v5** (Google OAuth)
+- **@dnd-kit** for drag-and-drop
+- **MCP SDK** for agent tool integration
+- **Playwright** for API and browser tests
 - **Lucide React** icons
 - **Raleway** (headings) + **Space Mono** (numeric data)
 
@@ -22,11 +27,106 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000/dev](http://localhost:3000/dev) to browse the component showcase.
+Open [http://localhost:3000](http://localhost:3000) for the Kitchen Planner home page, or [http://localhost:3000/dev](http://localhost:3000/dev) for the component showcase.
+
+### Environment variables
+
+For production (Turso):
+
+```
+TURSO_DATABASE_URL=libsql://...
+TURSO_AUTH_TOKEN=...
+```
+
+Local development uses a file-based SQLite database at `./data/the-pass.db` by default.
+
+## Kitchen Planner
+
+### The Pass (Sales Pipeline)
+
+A 5-stage kanban board using a restaurant metaphor:
+
+**At the door** > **Reservation** > **Seated** > **Cleared** > **Left the building**
+
+- Drag-and-drop cards between stages
+- Heat indicators and project sizing
+- Journal entries per project (notes, updates, meetings, calls, emails)
+
+### The Kitchen (Ticket Tracker)
+
+Per-project ticket management with 5 statuses:
+
+**Backlog** > **To Do** > **In Progress** > **Review** > **Done**
+
+- Markdown content with rendered preview
+- T-shirt sizing (XS--XL) and priority levels
+- Human and agent comments
+- Automatic field-level change history
+- Unique references: `PROJECT_CODE-DISH_NUMBER` (e.g. `GIG-0001`)
+- Agent assignment and claim functionality
+
+## MCP server
+
+An MCP server at `mcp/kitchen-planner.ts` exposes six tools for Claude Code agents:
+
+| Tool | Description |
+|------|-------------|
+| `list_projects` | List all projects with codes, stages, owners |
+| `list_dishes` | List tickets with filters (project, status, assignee, agent) |
+| `read_dish` | Read a single dish by reference |
+| `update_dish` | Update ticket fields (title, body, status, priority, size, etc.) |
+| `add_comment` | Add a markdown comment to a dish |
+| `claim_dish` | Set the agent field to the claimant's identity |
+
+### Agent setup
+
+Add to your Claude Code MCP config:
+
+```json
+{
+  "mcpServers": {
+    "kitchen-planner": {
+      "command": "npx",
+      "args": ["tsx", "mcp/kitchen-planner.ts"],
+      "env": {
+        "KP_API_KEY": "your-key-here",
+        "KP_BASE_URL": "https://sauce-wireframe.vercel.app"
+      }
+    }
+  }
+}
+```
+
+Five agent roles are pre-configured with API keys (listed on the home page): ux-designer, backend-dev, frontend-dev, qa-tester, tech-lead.
+
+## API
+
+All agent-facing endpoints are under `/api/v1/` and require a Bearer token.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/projects` | List all projects |
+| GET | `/api/v1/dishes` | List dishes (filterable) |
+| GET | `/api/v1/dishes/:ref` | Get dish by reference |
+| PATCH | `/api/v1/dishes/:ref` | Update dish fields |
+| POST | `/api/v1/dishes/:ref/comments` | Add comment |
+| POST | `/api/v1/dishes/:ref/claim` | Claim dish |
+
+Frontend routes use separate unauthenticated endpoints under `/api/the-pass` and `/api/the-kitchen`.
+
+## Testing
+
+```bash
+npm test              # All 31 tests (API + browser)
+npm run test:api      # API tests only
+npm run test:browser  # Browser tests only
+```
+
+Tests use a seeded test database with 3 projects, 5 dishes, comments, history, users, and API keys.
 
 ## Dev showcase
 
-The `/dev` routes are a living reference for the entire design system:
+The `/dev` routes are the living reference for the component library:
 
 | Route | Content |
 |-------|---------|
@@ -46,21 +146,6 @@ The `/dev` routes are a living reference for the entire design system:
 - **Layout & Navigation (7):** Header, Sidebar, Breadcrumbs, Tabs, Pagination, Stepper, Footer
 - **Composite Patterns (5):** Command Palette, Dropdown Menu, Context Menu, Form, Search
 
-## Layout system
-
-**Shells** (full-page wrappers):
-- Sidebar Shell -- standard admin/SaaS pattern
-- Top Nav Shell -- horizontal navigation for shallow hierarchies
-- Bottom Nav Shell -- mobile-native tab bar
-
-**Content layouts** (inside a shell's content region):
-- Single Column, Dashboard Grid, Split View, Main + Aside, Centered Card
-
-## Page templates
-
-7 standard admin/CRUD page types:
-- Dashboard, Resource List, Resource Create, Resource Detail, Resource Edit, Delete/Archive confirmation patterns, HasMany List
-
 ## Design tokens
 
 All visual decisions are encoded in `src/app/globals.css` as CSS custom properties wired into Tailwind v4's `@theme` block:
@@ -73,12 +158,4 @@ All visual decisions are encoded in `src/app/globals.css` as CSS custom properti
 
 ## Built with
 
-This project follows the [Sauce UI Guidelines](https://github.com/sauce-consultants/component-guidelines) specification library, implementing all 7 setup steps:
-
-1. Brand audit
-2. Design token layer
-3. Dev showcase routes
-4. Component library (41/41)
-5. Layout shells
-6. Page templates
-7. Feature development (ready)
+This project follows the [Sauce UI Guidelines](https://github.com/sauce-consultants/component-guidelines) specification library.
