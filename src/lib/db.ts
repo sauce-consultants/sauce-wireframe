@@ -73,9 +73,13 @@ export async function initDb(): Promise<Client> {
       content TEXT NOT NULL,
       author_name TEXT NOT NULL,
       author_type TEXT NOT NULL CHECK(author_type IN ('human','agent')),
-      created_at TEXT NOT NULL
+      created_at TEXT NOT NULL,
+      updated_at TEXT
     )
   `);
+
+  // Migration: add updated_at to dish_comments if missing
+  await db.execute("ALTER TABLE dish_comments ADD COLUMN updated_at TEXT").catch(() => {});
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS dish_history (

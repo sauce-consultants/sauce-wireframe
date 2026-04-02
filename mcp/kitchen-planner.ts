@@ -150,6 +150,21 @@ server.tool(
   }
 );
 
+// Tool: edit_ticket_comment
+server.tool(
+  "edit_ticket_comment",
+  "Edit one of your own comments on a ticket. You can only edit comments you authored.",
+  {
+    ref: z.string().describe("Ticket reference (e.g. 'GIG-0001')"),
+    commentId: z.number().describe("ID of the comment to edit"),
+    content: z.string().describe("New comment content (markdown supported)"),
+  },
+  async ({ ref, commentId, content }) => {
+    const data = await api("PATCH", `/dishes/${ref.toUpperCase()}/comments`, { commentId, content });
+    return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+  }
+);
+
 // Tool: claim_ticket
 server.tool(
   "claim_ticket",

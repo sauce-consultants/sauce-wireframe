@@ -136,6 +136,20 @@ function createServer(apiKey: string, requestUrl: string) {
   );
 
   server.tool(
+    "edit_ticket_comment",
+    "Edit one of your own comments on a ticket. You can only edit comments you authored.",
+    {
+      ref: z.string().describe("Ticket reference (e.g. 'GIG-0001')"),
+      commentId: z.number().describe("ID of the comment to edit"),
+      content: z.string().describe("New comment content (markdown supported)"),
+    },
+    async ({ ref, commentId, content }) => {
+      const data = await api("PATCH", `/dishes/${ref.toUpperCase()}/comments`, { commentId, content });
+      return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+    }
+  );
+
+  server.tool(
     "claim_ticket",
     "Claim a ticket — sets the agent field to your identity. Use this when you start working on a ticket.",
     {

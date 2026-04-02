@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { insertDish, updateDish as updateDishDb, insertDishComment } from "@/lib/dish-queries";
+import { insertDish, updateDish as updateDishDb, insertDishComment, updateDishComment as updateDishCommentDb, getDishComment } from "@/lib/dish-queries";
 import type { DishStatus, Priority, AuthorType } from "@/components/the-kitchen/types";
 
 const VALID_STATUSES: DishStatus[] = ["backlog", "todo", "in_progress", "review", "done"];
@@ -135,5 +135,23 @@ export async function addDishComment(formData: FormData) {
     return { success: true };
   } catch {
     return { error: "Failed to add comment." };
+  }
+}
+
+export async function editDishComment(commentId: number, content: string, currentUserName: string) {
+  if (!commentId) return { error: "Comment ID is missing." };
+  if (!content?.trim()) return { error: "Comment content is required." };
+
+  try {
+    const comment = await getDishComment(commentId);
+    if (!comment) return { error: "Comment not found." };
+    if (comment.author_name !== currentUserName) return { error: "You can only edit your own comments." };
+
+    await updateDishCommentDb(commentId, content.trim());
+
+    revalidatePath("/the-kitchen");
+    return { success: true };
+  } catch {
+    return { error: "Failed to edit comment." };
   }
 }

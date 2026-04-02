@@ -70,6 +70,7 @@ export interface DishComment {
   authorName: string;
   authorType: AuthorType;
   createdAt: string;
+  updatedAt: string | null;
 }
 
 export interface DishHistoryEntry {

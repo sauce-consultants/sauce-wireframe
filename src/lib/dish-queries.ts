@@ -318,7 +318,7 @@ export async function getDishComments(dishId: number): Promise<DishComment[]> {
     args: [dishId],
   });
   const rows = result.rows as unknown as {
-    id: number; dish_id: number; content: string; author_name: string; author_type: string; created_at: string;
+    id: number; dish_id: number; content: string; author_name: string; author_type: string; created_at: string; updated_at: string | null;
   }[];
   return rows.map((r) => ({
     id: r.id,
@@ -327,6 +327,7 @@ export async function getDishComments(dishId: number): Promise<DishComment[]> {
     authorName: r.author_name,
     authorType: r.author_type as AuthorType,
     createdAt: r.created_at,
+    updatedAt: r.updated_at,
   }));
 }
 
@@ -348,6 +349,25 @@ export async function insertDishComment(data: NewDishComment): Promise<number> {
     args: [data.dishId, data.content, data.authorName, data.authorType, now],
   });
   return Number(result.lastInsertRowid);
+}
+
+export async function updateDishComment(commentId: number, content: string): Promise<void> {
+  const db = await initDb();
+  const now = new Date().toISOString();
+  await db.execute({
+    sql: "UPDATE dish_comments SET content = ?, updated_at = ? WHERE id = ?",
+    args: [content, now, commentId],
+  });
+}
+
+export async function getDishComment(commentId: number): Promise<{ author_name: string } | null> {
+  const db = await initDb();
+  const result = await db.execute({
+    sql: "SELECT author_name FROM dish_comments WHERE id = ?",
+    args: [commentId],
+  });
+  if (result.rows.length === 0) return null;
+  return { author_name: String(result.rows[0].author_name) };
 }
 
 // --- History ---
