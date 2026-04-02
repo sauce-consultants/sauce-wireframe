@@ -22,7 +22,7 @@ export async function createCustomer(formData: FormData) {
   if (!owner?.trim()) return { error: "Please select an owner." };
 
   try {
-    insertCustomer({
+    await insertCustomer({
       companyName: companyName.trim(),
       subtitle: subtitle?.trim() || undefined,
       shortCode: shortCode?.trim() || undefined,
@@ -57,7 +57,7 @@ export async function updateCustomer(formData: FormData) {
   if (!owner?.trim()) return { error: "Please select an owner." };
 
   try {
-    updateCustomerDb({
+    await updateCustomerDb({
       id,
       companyName: companyName.trim(),
       subtitle: subtitle?.trim() || undefined,
@@ -121,7 +121,7 @@ export async function addJournalEntry(formData: FormData) {
   if (!author?.trim()) return { error: "Please select an author." };
 
   try {
-    insertJournalEntry({
+    await insertJournalEntry({
       customerId,
       content: content.trim(),
       author: author.trim(),

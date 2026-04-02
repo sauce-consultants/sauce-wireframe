@@ -22,7 +22,7 @@ export async function createDish(formData: FormData) {
   if (!customerId) return { error: "Please select a project." };
 
   try {
-    insertDish({
+    await insertDish({
       title: title.trim(),
       body: body?.trim() || "",
       status: VALID_STATUSES.includes(status as DishStatus) ? (status as DishStatus) : "backlog",
@@ -60,7 +60,7 @@ export async function updateDish(formData: FormData) {
   if (!customerId) return { error: "Please select a project." };
 
   try {
-    updateDishDb({
+    await updateDishDb({
       id,
       title: title.trim(),
       body: body?.trim() || "",
@@ -124,7 +124,7 @@ export async function addDishComment(formData: FormData) {
   if (!authorName?.trim()) return { error: "Author name is required." };
 
   try {
-    insertDishComment({
+    await insertDishComment({
       dishId,
       content: content.trim(),
       authorName: authorName.trim(),
